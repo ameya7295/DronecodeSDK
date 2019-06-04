@@ -31,6 +31,7 @@ add_library(dronecode_sdk
 )
 
 target_link_libraries(dronecode_sdk
+    PRIVATE
     tinyxml2::tinyxml2
     CURL::libcurl
     ${CMAKE_THREAD_LIBS_INIT}
