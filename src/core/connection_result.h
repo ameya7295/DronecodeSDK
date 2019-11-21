@@ -1,14 +1,14 @@
 #pragma once
 
 /**
- * @brief Namespace for all dronecode_sdk types.
+ * @brief Namespace for all mavsdk types.
  */
-namespace dronecode_sdk {
+namespace mavsdk {
 
 /**
  * @brief Result type returned when adding a connection.
  *
- * **Note**: DronecodeSDK does not throw exceptions. Instead a result of this type will be
+ * **Note**: Mavsdk does not throw exceptions. Instead a result of this type will be
  * returned when you add a connection: add_udp_connection().
  */
 enum class ConnectionResult {
@@ -34,7 +34,7 @@ enum class ConnectionResult {
  * @param result The enum value for which a human readable string is required.
  * @return Human readable string for the ConnectionResult.
  */
-inline const char *connection_result_str(const ConnectionResult result)
+inline const char* connection_result_str(const ConnectionResult result)
 {
     switch (result) {
         case ConnectionResult::SUCCESS:
@@ -70,4 +70,4 @@ inline const char *connection_result_str(const ConnectionResult result)
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

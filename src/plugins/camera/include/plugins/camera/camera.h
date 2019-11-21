@@ -8,11 +8,17 @@
 
 #include "plugin_base.h"
 
+// On Windows the build fails if a define for ERROR is leaked after
+// above includes.
+//
+// The compile error is:
+// "illegal token on right side of '::'"
+// in Camera::Result::ERROR.
 #ifdef ERROR
 #undef ERROR
 #endif
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class CameraImpl;
 class System;
@@ -41,7 +47,7 @@ public:
      *
      * @param system The specific system associated with this plugin.
      */
-    explicit Camera(System &system);
+    explicit Camera(System& system);
 
     /**
      * @brief Destructor (internal use only).
@@ -144,7 +150,7 @@ public:
      *
      * @param callback Function to call with result of request.
      */
-    void take_photo_async(const result_callback_t &callback);
+    void take_photo_async(const result_callback_t& callback);
 
     /**
      * @brief Start photo interval (asynchronous).
@@ -155,7 +161,7 @@ public:
      * @param interval_s The interval between photos in seconds.
      * @param callback Function to call with result of request.
      */
-    void start_photo_interval_async(float interval_s, const result_callback_t &callback);
+    void start_photo_interval_async(float interval_s, const result_callback_t& callback);
 
     /**
      * @brief Stop photo interval (asynchronous).
@@ -164,7 +170,7 @@ public:
      *
      * @param callback Function to call with result of request.
      */
-    void stop_photo_interval_async(const result_callback_t &callback);
+    void stop_photo_interval_async(const result_callback_t& callback);
 
     /**
      * @brief Start video capture (asynchronous).
@@ -173,7 +179,7 @@ public:
      *
      * @param callback Function to call with result of request.
      */
-    void start_video_async(const result_callback_t &callback);
+    void start_video_async(const result_callback_t& callback);
 
     /**
      * @brief Stop video capture (asynchronous).
@@ -182,7 +188,7 @@ public:
      *
      * @param callback Function to call with result of request.
      */
-    void stop_video_async(const result_callback_t &callback);
+    void stop_video_async(const result_callback_t& callback);
 
     /**
      * @brief General camera information.
@@ -211,7 +217,7 @@ public:
     /**
      * @brief Callback type for asynchronous camera mode calls.
      */
-    typedef std::function<void(Result, const Mode &)> mode_callback_t;
+    typedef std::function<void(Result, const Mode&)> mode_callback_t;
 
     /**
      * @brief Setter for camera mode (synchronous).
@@ -228,14 +234,14 @@ public:
      * @param mode Camera mode to set.
      * @param callback Function to call with result of request.
      */
-    void set_mode_async(const Mode mode, const mode_callback_t &callback);
+    void set_mode_async(const Mode mode, const mode_callback_t& callback);
 
     /**
      * @brief Getter for camera mode (asynchronous).
      *
      * @param callback Function to call with result of request.
      */
-    void get_mode_async(const mode_callback_t &callback);
+    void get_mode_async(const mode_callback_t& callback);
 
     /**
      * @brief Callback type for camera mode subscription.
@@ -306,10 +312,8 @@ public:
     /**
      * @brief Type for video stream settings.
      *
-     * Application may call set_video_stream_settings() before starting
-     * video streaming to tell Camera server to use these settings during video streaming.
      *
-     * @sa set_video_stream_settings(), get_video_stream_info(), start_video_streaming().
+     * @sa get_video_stream_info(), start_video_streaming().
      */
     struct VideoStreamSettings {
         float frame_rate_hz = 0.f; /**< @brief Frames per second. */
@@ -318,36 +322,7 @@ public:
         uint32_t bit_rate_b_s = 0u; /**< @brief Bit rate in bits per second. */
         uint16_t rotation_deg = 0u; /**< @brief Video image rotation clockwise (0-359 degrees). */
         std::string uri{}; /**< @brief Video stream URI. */
-
-        /**
-         * @brief Sets to highest possible settings for Resolution, framerate.
-         */
-        void set_highest()
-        {
-            frame_rate_hz = FRAME_RATE_HIGHEST;
-            horizontal_resolution_pix = RESOLUTION_H_HIGHEST;
-            vertical_resolution_pix = RESOLUTION_V_HIGHEST;
-            // FIXME: Should bit_rate_b_s be part of set_highest() ?
-            bit_rate_b_s = BIT_RATE_AUTO;
-        }
-
-        constexpr static const float FRAME_RATE_HIGHEST =
-            -1.0f; /**< @brief Highest possible framerate. */
-        constexpr static const uint16_t RESOLUTION_H_HIGHEST =
-            UINT16_MAX; /**< @brief Highest possible horizontal resolution. */
-        constexpr static const uint16_t RESOLUTION_V_HIGHEST =
-            UINT16_MAX; /**< @brief Highest possible vertical resolution. */
-        constexpr static const uint32_t BIT_RATE_AUTO =
-            0; /**< @brief Auto settings for Bit rate. */
     };
-
-    /**
-     * @brief Sets video stream settings.
-     *
-     * @param settings Reference to custom video stream settings which include resolution,
-     * framerate, bitrate, etc.
-     */
-    void set_video_stream_settings(const VideoStreamSettings &settings);
 
     /**
      * @brief Information about video stream.
@@ -373,7 +348,7 @@ public:
      *
      * @return SUCCESS if video stream info is received, error otherwise.
      */
-    Result get_video_stream_info(VideoStreamInfo &info);
+    Result get_video_stream_info(VideoStreamInfo& info);
 
     /**
      * @brief Callback type for asynchronous video stream info call.
@@ -497,6 +472,7 @@ public:
         std::string setting_id{}; /**< Name of the setting (machine readable). */
         std::string setting_description{}; /**< Description of the setting (human readable). */
         Option option{}; /**< Selected option. */
+        bool is_range{false}; /**< If Option is given as a range. */
     };
 
     /**
@@ -505,7 +481,9 @@ public:
     struct SettingOptions {
         std::string setting_id{}; /**< Name of the setting (machine readable). */
         std::string setting_description{}; /**< Description of the setting (human readable). */
-        std::vector<Option> options{}; /**< List of options. */
+        std::vector<Option>
+            options{}; /**< List of options, or if range [min, max] or [min, max, interval]. */
+        bool is_range{false}; /**< If Option is given as a range. */
     };
 
     /**
@@ -514,7 +492,7 @@ public:
      * @param settings List of settings that can be changed.
      * @return true request was successful.
      */
-    bool get_possible_setting_options(std::vector<std::string> &settings);
+    bool get_possible_setting_options(std::vector<std::string>& settings);
 
     /**
      * @brief Get possible options for a setting that can be selected.
@@ -523,7 +501,18 @@ public:
      * @param options List of `Option` objects to select from.
      * @return true if request was successful.
      */
-    bool get_possible_options(const std::string &setting_id, std::vector<Camera::Option> &options);
+    bool get_possible_options(const std::string& setting_id, std::vector<Camera::Option>& options);
+
+    /**
+     * @brief Query if setting is a range setting.
+     *
+     * A range setting is not given by possible options but rather by [min, max] or [min, max,
+     * interval].
+     *
+     * @param setting_id Name of setting (machine readable).
+     * @return true if it is a range setting.
+     */
+    bool is_setting_range(const std::string& setting_id);
 
     /**
      * @brief Get an option of a setting (synchronous).
@@ -532,12 +521,12 @@ public:
      * @param option A reference to the option to set.
      * @return Result of request.
      */
-    Camera::Result get_option(const std::string &setting_id, Option &option);
+    Camera::Result get_option(const std::string& setting_id, Option& option);
 
     /**
      * @brief Callback type to get an option.
      */
-    typedef std::function<void(Result, const Option &)> get_option_callback_t;
+    typedef std::function<void(Result, const Option&)> get_option_callback_t;
 
     /**
      * @brief Get an option of a setting (asynchronous).
@@ -545,7 +534,7 @@ public:
      * @param setting_id The machine readable name of the setting.
      * @param callback The callback to get the result and selected option.
      */
-    void get_option_async(const std::string &setting_id, const get_option_callback_t &callback);
+    void get_option_async(const std::string& setting_id, const get_option_callback_t& callback);
 
     /**
      * @brief Set an option of a setting (asynchronous).
@@ -554,9 +543,10 @@ public:
      * @param option The machine readable name of the option value.
      * @param callback The callback to get the result.
      */
-    void set_option_async(const result_callback_t &callback,
-                          const std::string &setting_id,
-                          const Camera::Option &option);
+    void set_option_async(
+        const result_callback_t& callback,
+        const std::string& setting_id,
+        const Camera::Option& option);
 
     /**
      * @brief Callback type to get the currently selected settings.
@@ -574,7 +564,7 @@ public:
      *
      * @param callback Function to call when current options have been updated.
      */
-    void subscribe_current_settings(const subscribe_current_settings_callback_t &callback);
+    void subscribe_current_settings(const subscribe_current_settings_callback_t& callback);
 
     /**
      * @brief Subscribe to all possible setting options (asynchronous).
@@ -582,7 +572,7 @@ public:
      * @param callback Function to call when possible options have been updated.
      */
     void subscribe_possible_setting_options(
-        const subscribe_possible_setting_options_callback_t &callback);
+        const subscribe_possible_setting_options_callback_t& callback);
 
     /**
      * @brief Format storage (e.g. SD card) in camera (asynchronous).
@@ -605,12 +595,12 @@ public:
     /**
      * @brief Copy constructor (object is not copyable).
      */
-    Camera(const Camera &) = delete;
+    Camera(const Camera&) = delete;
 
     /**
      * @brief Equality operator (object is not copyable).
      */
-    const Camera &operator=(const Camera &) = delete;
+    const Camera& operator=(const Camera&) = delete;
 
 private:
     /** @private Underlying implementation, set at instantiation */
@@ -622,157 +612,157 @@ private:
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::VideoStreamSettings &lhs, const Camera::VideoStreamSettings &rhs);
+bool operator==(const Camera::VideoStreamSettings& lhs, const Camera::VideoStreamSettings& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::VideoStreamSettings`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str,
-                         Camera::VideoStreamSettings const &video_stream_settings);
+std::ostream&
+operator<<(std::ostream& str, Camera::VideoStreamSettings const& video_stream_settings);
 
 /**
  * @brief Equal operator to compare two `Camera::VideoStreamInfo` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::VideoStreamInfo &lhs, const Camera::VideoStreamInfo &rhs);
+bool operator==(const Camera::VideoStreamInfo& lhs, const Camera::VideoStreamInfo& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::VideoStreamInfo`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::VideoStreamInfo const &video_stream_info);
+std::ostream& operator<<(std::ostream& str, Camera::VideoStreamInfo const& video_stream_info);
 
 /**
  * @brief Stream operator to print information about a `Camera::VideoStreamInfo::Status`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str,
-                         Camera::VideoStreamInfo::Status const &video_stream_info_status);
+std::ostream&
+operator<<(std::ostream& str, Camera::VideoStreamInfo::Status const& video_stream_info_status);
 
 /**
  * @brief Equal operator to compare two `Camera::CaptureInfo` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::CaptureInfo &lhs, const Camera::CaptureInfo &rhs);
+bool operator==(const Camera::CaptureInfo& lhs, const Camera::CaptureInfo& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::CaptureInfo`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::CaptureInfo const &capture_info);
+std::ostream& operator<<(std::ostream& str, Camera::CaptureInfo const& capture_info);
 
 /**
  * @brief Equal operator to compare two `Camera::CaptureInfo::Position` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::CaptureInfo::Position &lhs, const Camera::CaptureInfo::Position &rhs);
+bool operator==(const Camera::CaptureInfo::Position& lhs, const Camera::CaptureInfo::Position& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::CaptureInfo::Position`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::CaptureInfo::Position const &position);
+std::ostream& operator<<(std::ostream& str, Camera::CaptureInfo::Position const& position);
 
 /**
  * @brief Equal operator to compare two `Camera::CaptureInfo::Quaternion` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::CaptureInfo::Quaternion &lhs,
-                const Camera::CaptureInfo::Quaternion &rhs);
+bool operator==(
+    const Camera::CaptureInfo::Quaternion& lhs, const Camera::CaptureInfo::Quaternion& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::CaptureInfo::Quaternion`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::CaptureInfo::Quaternion const &quaternion);
+std::ostream& operator<<(std::ostream& str, Camera::CaptureInfo::Quaternion const& quaternion);
 
 /**
  * @brief Equal operator to compare two `Camera::CaptureInfo::EulerAngle` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::CaptureInfo::EulerAngle &lhs,
-                const Camera::CaptureInfo::EulerAngle &rhs);
+bool operator==(
+    const Camera::CaptureInfo::EulerAngle& lhs, const Camera::CaptureInfo::EulerAngle& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::CaptureInfo::EulerAngle`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::CaptureInfo::EulerAngle const &euler_angle);
+std::ostream& operator<<(std::ostream& str, Camera::CaptureInfo::EulerAngle const& euler_angle);
 
 /**
  * @brief Equal operator to compare two `Camera::Status` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::Status &lhs, const Camera::Status &rhs);
+bool operator==(const Camera::Status& lhs, const Camera::Status& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::Status`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::Status const &status);
+std::ostream& operator<<(std::ostream& str, Camera::Status const& status);
 
 /**
  * @brief Stream operator to print information about a `Camera::Status::StorageStatus`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::Status::StorageStatus const &storage_status);
+std::ostream& operator<<(std::ostream& str, Camera::Status::StorageStatus const& storage_status);
 
 /**
  * @brief Equal operator to compare two `Camera::Setting` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::Setting &lhs, const Camera::Setting &rhs);
+bool operator==(const Camera::Setting& lhs, const Camera::Setting& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::Setting`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::Setting const &setting);
+std::ostream& operator<<(std::ostream& str, Camera::Setting const& setting);
 
 /**
  * @brief Equal operator to compare two `Camera::Option` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::Option &lhs, const Camera::Option &rhs);
+bool operator==(const Camera::Option& lhs, const Camera::Option& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::Option`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::Option const &option);
+std::ostream& operator<<(std::ostream& str, Camera::Option const& option);
 
 /**
  * @brief Equal operator to compare two `Camera::SettingOptions` objects.
  *
  * @return `true` if items are equal.
  */
-bool operator==(const Camera::SettingOptions &lhs, const Camera::SettingOptions &rhs);
+bool operator==(const Camera::SettingOptions& lhs, const Camera::SettingOptions& rhs);
 
 /**
  * @brief Stream operator to print information about a `Camera::Option`.
  *
  * @return A reference to the stream.
  */
-std::ostream &operator<<(std::ostream &str, Camera::SettingOptions const &setting_options);
+std::ostream& operator<<(std::ostream& str, Camera::SettingOptions const& setting_options);
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

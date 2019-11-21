@@ -3,9 +3,9 @@
 #include "calibration_impl.h"
 #include "calibration_messages.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-Calibration::Calibration(System &system) : PluginBase(), _impl(new CalibrationImpl(system)) {}
+Calibration::Calibration(System& system) : PluginBase(), _impl(new CalibrationImpl(system)) {}
 
 Calibration::~Calibration()
 {
@@ -37,7 +37,7 @@ void Calibration::cancel_calibration()
     _impl->cancel_calibration();
 }
 
-const char *Calibration::result_str(Result result)
+const char* Calibration::result_str(Result result)
 {
     switch (result) {
         case Result::SUCCESS:
@@ -66,4 +66,4 @@ const char *Calibration::result_str(Result result)
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

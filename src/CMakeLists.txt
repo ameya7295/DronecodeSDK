@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 cmake_policy(SET CMP0025 NEW)
 
-project(dronecode_sdk)
+project(mavsdk)
 
 # ccache
 option(CCACHE "Use ccache if available" ON)
@@ -28,20 +28,10 @@ option(CMAKE_POSITION_INDEPENDENT_CODE "Position independent code" ON)
 
 include(cmake/compiler_flags.cmake)
 
-find_package(CURL REQUIRED CONFIG)
-find_package(tinyxml2 REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
-if(NOT MSVC AND NOT MINGW)
-    cmake_policy(SET CMP0058 NEW)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/third_party/cpp_rsc/cmake/modules/cpp_resource.cmake)
-    if(NOT ANDROID AND NOT IOS)
-        # If not cross-compiling, we can build cpp_rsc.
-        add_subdirectory(third_party/cpp_rsc/src EXCLUDE_FROM_ALL)
-    else()
-        # For cross-compilation, re-use the binary from default.
-        set_property(GLOBAL PROPERTY CPPRSC_CMD ${CMAKE_CURRENT_BINARY_DIR}/../../default/src/third_party/cpp_rsc/src/cpp_rsc)
-    endif()
-endif()
+find_package(CURL REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 if(BUILD_TESTS AND (IOS OR ANDROID))
     message(STATUS "Building for iOS or Android: forcing BUILD_TESTS to FALSE...")
@@ -56,8 +46,8 @@ else()
     set(lib_path "lib")
 endif()
 
-set(dronecode_sdk_install_include_dir "include/dronecode_sdk")
-set(dronecode_sdk_install_lib_dir ${lib_path})
+set(mavsdk_install_include_dir "include/mavsdk")
+set(mavsdk_install_lib_dir ${lib_path})
 
 execute_process(
     COMMAND git describe --abbrev=8 --dirty --always --tags
@@ -67,9 +57,7 @@ execute_process(
 )
 
 STRING(REGEX REPLACE v\([0-9]+.[0-9]+.[0-9]+.*$\) \\1 VERSION_STR "${VERSION_STR}")
-
 message(STATUS "Version: ${VERSION_STR}")
-add_definitions(-DDRONECODE_SDK_VERSION="${VERSION_STR}")
 
 add_subdirectory(core)
 add_subdirectory(plugins)
@@ -95,7 +83,7 @@ if(BUILD_TESTS)
 endif()
 
 if (BUILD_BACKEND)
-    message(STATUS "Building dronecode_sdk server")
+    message(STATUS "Building mavsdk server")
     add_subdirectory(backend)
 else()
     message(STATUS "BUILD_BACKEND not set: not building grpc backend")
@@ -109,6 +97,6 @@ if (DROP_DEBUG EQUAL 1)
     )
 
     target_link_libraries(drop_debug
-        dronecode_sdk
+        mavsdk
     )
 endif()

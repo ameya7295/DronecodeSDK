@@ -8,28 +8,34 @@
 #include <cstdint>
 #include "connection.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class UdpConnection : public Connection {
 public:
-    explicit UdpConnection(Connection::receiver_callback_t receiver_callback,
-                           const std::string &local_ip,
-                           int local_port);
+    explicit UdpConnection(
+        Connection::receiver_callback_t receiver_callback,
+        const std::string& local_ip,
+        int local_port);
     ~UdpConnection();
     ConnectionResult start();
     ConnectionResult stop();
 
-    bool send_message(const mavlink_message_t &message);
+    bool send_message(const mavlink_message_t& message);
+
+    void add_remote(const std::string& remote_ip, const int remote_port);
 
     // Non-copyable
-    UdpConnection(const UdpConnection &) = delete;
-    const UdpConnection &operator=(const UdpConnection &) = delete;
+    UdpConnection(const UdpConnection&) = delete;
+    const UdpConnection& operator=(const UdpConnection&) = delete;
 
 private:
     ConnectionResult setup_port();
     void start_recv_thread();
 
     void receive();
+
+    void add_remote_with_remote_sysid(
+        const std::string& remote_ip, const int remote_port, const uint8_t remote_sysid);
 
     std::string _local_ip;
     int _local_port_number;
@@ -39,7 +45,7 @@ private:
         std::string ip{};
         int port_number{0};
 
-        bool operator==(const UdpConnection::Remote &other)
+        bool operator==(const UdpConnection::Remote& other)
         {
             return ip == other.ip && port_number == other.port_number;
         }
@@ -49,8 +55,8 @@ private:
     std::vector<Remote> _remotes{};
 
     int _socket_fd{-1};
-    std::thread *_recv_thread{nullptr};
+    std::thread* _recv_thread{nullptr};
     std::atomic_bool _should_exit{false};
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

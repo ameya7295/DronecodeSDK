@@ -3,16 +3,16 @@
 #include "calibration/calibration.grpc.pb.h"
 #include "plugins/calibration/calibration.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace backend {
 
 template<typename Calibration = Calibration>
 class CalibrationServiceImpl final : public rpc::calibration::CalibrationService::Service {
 public:
-    CalibrationServiceImpl(Calibration &calibration) : _calibration(calibration) {}
+    CalibrationServiceImpl(Calibration& calibration) : _calibration(calibration) {}
 
     static std::unique_ptr<rpc::calibration::CalibrationResult>
-    translateCalibrationResult(const dronecode_sdk::Calibration::Result &calibration_result)
+    translateCalibrationResult(const mavsdk::Calibration::Result& calibration_result)
     {
         auto rpc_calibration_result = std::unique_ptr<rpc::calibration::CalibrationResult>(
             new rpc::calibration::CalibrationResult());
@@ -20,14 +20,13 @@ public:
         auto rpc_result =
             static_cast<rpc::calibration::CalibrationResult::Result>(calibration_result);
         rpc_calibration_result->set_result(rpc_result);
-        rpc_calibration_result->set_result_str(
-            dronecode_sdk::Calibration::result_str(calibration_result));
+        rpc_calibration_result->set_result_str(mavsdk::Calibration::result_str(calibration_result));
 
         return rpc_calibration_result;
     }
 
     static std::unique_ptr<rpc::calibration::ProgressData>
-    translateProgressData(const dronecode_sdk::Calibration::ProgressData &progress_data)
+    translateProgressData(const mavsdk::Calibration::ProgressData& progress_data)
     {
         auto rpc_progress_data =
             std::unique_ptr<rpc::calibration::ProgressData>(new rpc::calibration::ProgressData());
@@ -41,9 +40,9 @@ public:
     }
 
     grpc::Status SubscribeCalibrateGyro(
-        grpc::ServerContext * /* context */,
-        const rpc::calibration::SubscribeCalibrateGyroRequest *request,
-        grpc::ServerWriter<rpc::calibration::CalibrateGyroResponse> *writer) override
+        grpc::ServerContext* /* context */,
+        const rpc::calibration::SubscribeCalibrateGyroRequest* request,
+        grpc::ServerWriter<rpc::calibration::CalibrateGyroResponse>* writer) override
     {
         std::promise<void> stream_closed_promise;
         auto stream_closed_future = stream_closed_promise.get_future();
@@ -52,8 +51,8 @@ public:
 
         _calibration.calibrate_gyro_async(
             [this, &writer, &stream_closed_promise, is_finished](
-                const dronecode_sdk::Calibration::Result result,
-                const dronecode_sdk::Calibration::ProgressData progress_data) {
+                const mavsdk::Calibration::Result result,
+                const mavsdk::Calibration::ProgressData progress_data) {
                 rpc::calibration::CalibrateGyroResponse rpc_response;
                 rpc_response.set_allocated_calibration_result(
                     translateCalibrationResult(result).release());
@@ -73,9 +72,9 @@ public:
     }
 
     grpc::Status SubscribeCalibrateAccelerometer(
-        grpc::ServerContext * /* context */,
-        const rpc::calibration::SubscribeCalibrateAccelerometerRequest *request,
-        grpc::ServerWriter<rpc::calibration::CalibrateAccelerometerResponse> *writer) override
+        grpc::ServerContext* /* context */,
+        const rpc::calibration::SubscribeCalibrateAccelerometerRequest* request,
+        grpc::ServerWriter<rpc::calibration::CalibrateAccelerometerResponse>* writer) override
     {
         std::promise<void> stream_closed_promise;
         auto stream_closed_future = stream_closed_promise.get_future();
@@ -84,8 +83,8 @@ public:
 
         _calibration.calibrate_accelerometer_async(
             [this, &writer, &stream_closed_promise, is_finished](
-                const dronecode_sdk::Calibration::Result result,
-                const dronecode_sdk::Calibration::ProgressData progress_data) {
+                const mavsdk::Calibration::Result result,
+                const mavsdk::Calibration::ProgressData progress_data) {
                 rpc::calibration::CalibrateAccelerometerResponse rpc_response;
                 rpc_response.set_allocated_calibration_result(
                     translateCalibrationResult(result).release());
@@ -106,9 +105,9 @@ public:
     }
 
     grpc::Status SubscribeCalibrateMagnetometer(
-        grpc::ServerContext * /* context */,
-        const rpc::calibration::SubscribeCalibrateMagnetometerRequest *request,
-        grpc::ServerWriter<rpc::calibration::CalibrateMagnetometerResponse> *writer) override
+        grpc::ServerContext* /* context */,
+        const rpc::calibration::SubscribeCalibrateMagnetometerRequest* request,
+        grpc::ServerWriter<rpc::calibration::CalibrateMagnetometerResponse>* writer) override
     {
         std::promise<void> stream_closed_promise;
         auto stream_closed_future = stream_closed_promise.get_future();
@@ -117,8 +116,8 @@ public:
 
         _calibration.calibrate_magnetometer_async(
             [this, &writer, &stream_closed_promise, is_finished](
-                const dronecode_sdk::Calibration::Result result,
-                const dronecode_sdk::Calibration::ProgressData progress_data) {
+                const mavsdk::Calibration::Result result,
+                const mavsdk::Calibration::ProgressData progress_data) {
                 rpc::calibration::CalibrateMagnetometerResponse rpc_response;
                 rpc_response.set_allocated_calibration_result(
                     translateCalibrationResult(result).release());
@@ -138,9 +137,9 @@ public:
     }
 
     grpc::Status SubscribeCalibrateGimbalAccelerometer(
-        grpc::ServerContext * /* context */,
-        const rpc::calibration::SubscribeCalibrateGimbalAccelerometerRequest *request,
-        grpc::ServerWriter<rpc::calibration::CalibrateGimbalAccelerometerResponse> *writer) override
+        grpc::ServerContext* /* context */,
+        const rpc::calibration::SubscribeCalibrateGimbalAccelerometerRequest* request,
+        grpc::ServerWriter<rpc::calibration::CalibrateGimbalAccelerometerResponse>* writer) override
     {
         std::promise<void> stream_closed_promise;
         auto stream_closed_future = stream_closed_promise.get_future();
@@ -149,8 +148,8 @@ public:
 
         _calibration.calibrate_gimbal_accelerometer_async(
             [this, &writer, &stream_closed_promise, is_finished](
-                const dronecode_sdk::Calibration::Result result,
-                const dronecode_sdk::Calibration::ProgressData progress_data) {
+                const mavsdk::Calibration::Result result,
+                const mavsdk::Calibration::ProgressData progress_data) {
                 rpc::calibration::CalibrateGimbalAccelerometerResponse rpc_response;
                 rpc_response.set_allocated_calibration_result(
                     translateCalibrationResult(result).release());
@@ -169,18 +168,19 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status Cancel(grpc::ServerContext * /* context */,
-                        const rpc::calibration::CancelRequest * /* request */,
-                        rpc::calibration::CancelResponse * /* response */) override
+    grpc::Status Cancel(
+        grpc::ServerContext* /* context */,
+        const rpc::calibration::CancelRequest* /* request */,
+        rpc::calibration::CancelResponse* /* response */) override
     {
         _calibration.cancel_calibration();
         return grpc::Status::OK;
     }
 
 private:
-    Calibration &_calibration;
+    Calibration& _calibration;
     std::mutex _subscribe_mutex{};
 };
 
 } // namespace backend
-} // namespace dronecode_sdk
+} // namespace mavsdk

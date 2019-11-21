@@ -2,29 +2,30 @@
 #include <future>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/calibration/calibration.h"
 #include "plugins/param/param.h"
 #include "plugins/telemetry/telemetry.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
-static void receive_calibration_callback(const Calibration::Result result,
-                                         const Calibration::ProgressData &progress_data,
-                                         const std::string &calibration_type,
-                                         std::promise<Calibration::Result> &prom);
+static void receive_calibration_callback(
+    const Calibration::Result result,
+    const Calibration::ProgressData& progress_data,
+    const std::string& calibration_type,
+    std::promise<Calibration::Result>& prom);
 
 TEST(HardwareTest, CalibrationGyro)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto calibration = std::make_shared<Calibration>(system);
@@ -44,14 +45,14 @@ TEST(HardwareTest, CalibrationGyro)
 
 TEST(HardwareTest, CalibrationAccelerometer)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto calibration = std::make_shared<Calibration>(system);
@@ -71,14 +72,14 @@ TEST(HardwareTest, CalibrationAccelerometer)
 
 TEST(HardwareTest, CalibrationMagnetometer)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
 
     auto calibration = std::make_shared<Calibration>(system);
     ASSERT_TRUE(system.has_autopilot());
@@ -98,14 +99,14 @@ TEST(HardwareTest, CalibrationMagnetometer)
 
 TEST(HardwareTest, CalibrationGimbalAccelerometer)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_gimbal());
 
     auto calibration = std::make_shared<Calibration>(system);
@@ -125,14 +126,14 @@ TEST(HardwareTest, CalibrationGimbalAccelerometer)
 
 TEST(HardwareTest, CalibrationGyroWithTelemetry)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     // Reset Gyro calibration using param.
@@ -166,14 +167,14 @@ TEST(HardwareTest, CalibrationGyroWithTelemetry)
 
 TEST(HardwareTest, CalibrationGyroCancelled)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     // Do gyro calibration.
@@ -196,10 +197,11 @@ TEST(HardwareTest, CalibrationGyroCancelled)
     EXPECT_EQ(future_ret, Calibration::Result::CANCELLED);
 }
 
-void receive_calibration_callback(const Calibration::Result result,
-                                  const Calibration::ProgressData &progress_data,
-                                  const std::string &calibration_type,
-                                  std::promise<Calibration::Result> &prom)
+void receive_calibration_callback(
+    const Calibration::Result result,
+    const Calibration::ProgressData& progress_data,
+    const std::string& calibration_type,
+    std::promise<Calibration::Result>& prom)
 {
     if (result == Calibration::Result::IN_PROGRESS) {
         LogInfo() << calibration_type << " calibration in progress: " << progress_data.progress;

@@ -7,17 +7,18 @@
 #include "mission/mission.grpc.pb.h"
 #include "plugins/mission/mission_item.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace backend {
 
 template<typename Mission = Mission>
-class MissionServiceImpl final : public dronecode_sdk::rpc::mission::MissionService::Service {
+class MissionServiceImpl final : public mavsdk::rpc::mission::MissionService::Service {
 public:
-    MissionServiceImpl(Mission &mission) : _mission(mission) {}
+    MissionServiceImpl(Mission& mission) : _mission(mission) {}
 
-    grpc::Status UploadMission(grpc::ServerContext * /* context */,
-                               const rpc::mission::UploadMissionRequest *request,
-                               rpc::mission::UploadMissionResponse *response) override
+    grpc::Status UploadMission(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::UploadMissionRequest* request,
+        rpc::mission::UploadMissionResponse* response) override
     {
         std::promise<void> result_promise;
         const auto result_future = result_promise.get_future();
@@ -29,25 +30,26 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status
-    CancelMissionUpload(grpc::ServerContext * /* context */,
-                        const rpc::mission::CancelMissionUploadRequest * /* request */,
-                        rpc::mission::CancelMissionUploadResponse * /* response */) override
+    grpc::Status CancelMissionUpload(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::CancelMissionUploadRequest* /* request */,
+        rpc::mission::CancelMissionUploadResponse* /* response */) override
     {
         _mission.upload_mission_cancel();
         return grpc::Status::OK;
     }
 
-    grpc::Status DownloadMission(grpc::ServerContext * /* context */,
-                                 const rpc::mission::DownloadMissionRequest * /* request */,
-                                 rpc::mission::DownloadMissionResponse *response) override
+    grpc::Status DownloadMission(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::DownloadMissionRequest* /* request */,
+        rpc::mission::DownloadMissionResponse* response) override
     {
         std::promise<void> result_promise;
         const auto result_future = result_promise.get_future();
 
         _mission.download_mission_async(
             [this, response, &result_promise](
-                const dronecode_sdk::Mission::Result result,
+                const mavsdk::Mission::Result result,
                 const std::vector<std::shared_ptr<MissionItem>> mission_items) {
                 if (response != nullptr) {
                     auto rpc_mission_result = generateRPCMissionResult(result);
@@ -66,24 +68,25 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status
-    CancelMissionDownload(grpc::ServerContext * /* context */,
-                          const rpc::mission::CancelMissionDownloadRequest * /* request */,
-                          rpc::mission::CancelMissionDownloadResponse * /* response */) override
+    grpc::Status CancelMissionDownload(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::CancelMissionDownloadRequest* /* request */,
+        rpc::mission::CancelMissionDownloadResponse* /* response */) override
     {
         _mission.download_mission_cancel();
         return grpc::Status::OK;
     }
 
-    grpc::Status StartMission(grpc::ServerContext * /* context */,
-                              const rpc::mission::StartMissionRequest * /* request */,
-                              rpc::mission::StartMissionResponse *response) override
+    grpc::Status StartMission(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::StartMissionRequest* /* request */,
+        rpc::mission::StartMissionResponse* response) override
     {
         std::promise<void> result_promise;
         const auto result_future = result_promise.get_future();
 
         _mission.start_mission_async(
-            [this, response, &result_promise](const dronecode_sdk::Mission::Result result) {
+            [this, response, &result_promise](const mavsdk::Mission::Result result) {
                 if (response != nullptr) {
                     auto rpc_mission_result = generateRPCMissionResult(result);
                     response->set_allocated_mission_result(rpc_mission_result);
@@ -96,9 +99,10 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status IsMissionFinished(grpc::ServerContext * /* context */,
-                                   const rpc::mission::IsMissionFinishedRequest * /* request */,
-                                   rpc::mission::IsMissionFinishedResponse *response) override
+    grpc::Status IsMissionFinished(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::IsMissionFinishedRequest* /* request */,
+        rpc::mission::IsMissionFinishedResponse* response) override
     {
         if (response != nullptr) {
             auto is_mission_finished = _mission.mission_finished();
@@ -108,15 +112,16 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status PauseMission(grpc::ServerContext * /* context */,
-                              const rpc::mission::PauseMissionRequest * /* request */,
-                              rpc::mission::PauseMissionResponse *response) override
+    grpc::Status PauseMission(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::PauseMissionRequest* /* request */,
+        rpc::mission::PauseMissionResponse* response) override
     {
         std::promise<void> result_promise;
         const auto result_future = result_promise.get_future();
 
         _mission.pause_mission_async(
-            [this, response, &result_promise](const dronecode_sdk::Mission::Result result) {
+            [this, response, &result_promise](const mavsdk::Mission::Result result) {
                 if (response != nullptr) {
                     auto rpc_mission_result = generateRPCMissionResult(result);
                     response->set_allocated_mission_result(rpc_mission_result);
@@ -129,10 +134,32 @@ public:
         return grpc::Status::OK;
     }
 
-    grpc::Status
-    SetCurrentMissionItemIndex(grpc::ServerContext * /* context */,
-                               const rpc::mission::SetCurrentMissionItemIndexRequest *request,
-                               rpc::mission::SetCurrentMissionItemIndexResponse *response) override
+    grpc::Status ClearMission(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::ClearMissionRequest* /* request */,
+        rpc::mission::ClearMissionResponse* response) override
+    {
+        std::promise<void> result_promise;
+        const auto result_future = result_promise.get_future();
+
+        _mission.clear_mission_async(
+            [this, response, &result_promise](const mavsdk::Mission::Result result) {
+                if (response != nullptr) {
+                    auto rpc_mission_result = generateRPCMissionResult(result);
+                    response->set_allocated_mission_result(rpc_mission_result);
+                }
+
+                result_promise.set_value();
+            });
+
+        result_future.wait();
+        return grpc::Status::OK;
+    }
+
+    grpc::Status SetCurrentMissionItemIndex(
+        grpc::ServerContext* /* context */,
+        const rpc::mission::SetCurrentMissionItemIndexRequest* request,
+        rpc::mission::SetCurrentMissionItemIndexResponse* response) override
     {
         if (request == nullptr) {
             return grpc::Status::OK;
@@ -143,7 +170,7 @@ public:
 
         _mission.set_current_mission_item_async(
             request->index(),
-            [this, response, &result_promise](const dronecode_sdk::Mission::Result result) {
+            [this, response, &result_promise](const mavsdk::Mission::Result result) {
                 if (response != nullptr) {
                     auto rpc_mission_result = generateRPCMissionResult(result);
                     response->set_allocated_mission_result(rpc_mission_result);
@@ -157,9 +184,9 @@ public:
     }
 
     grpc::Status SubscribeMissionProgress(
-        grpc::ServerContext * /* context */,
-        const dronecode_sdk::rpc::mission::SubscribeMissionProgressRequest * /* request */,
-        grpc::ServerWriter<rpc::mission::MissionProgressResponse> *writer) override
+        grpc::ServerContext* /* context */,
+        const mavsdk::rpc::mission::SubscribeMissionProgressRequest* /* request */,
+        grpc::ServerWriter<rpc::mission::MissionProgressResponse>* writer) override
     {
         std::promise<void> stream_closed_promise;
         auto stream_closed_future = stream_closed_promise.get_future();
@@ -168,11 +195,10 @@ public:
 
         _mission.subscribe_progress(
             [this, &writer, &stream_closed_promise, is_finished](int current, int total) {
-                dronecode_sdk::rpc::mission::MissionProgressResponse rpc_mission_progress_response;
+                mavsdk::rpc::mission::MissionProgressResponse rpc_mission_progress_response;
 
-                auto rpc_mission_progress =
-                    std::unique_ptr<dronecode_sdk::rpc::mission::MissionProgress>(
-                        new dronecode_sdk::rpc::mission::MissionProgress);
+                auto rpc_mission_progress = std::unique_ptr<mavsdk::rpc::mission::MissionProgress>(
+                    new mavsdk::rpc::mission::MissionProgress);
                 rpc_mission_progress->set_current_item_index(current);
                 rpc_mission_progress->set_mission_count(total);
 
@@ -192,9 +218,9 @@ public:
     }
 
     grpc::Status GetReturnToLaunchAfterMission(
-        grpc::ServerContext * /* context */,
-        const rpc::mission::GetReturnToLaunchAfterMissionRequest * /* request */,
-        rpc::mission::GetReturnToLaunchAfterMissionResponse *response) override
+        grpc::ServerContext* /* context */,
+        const rpc::mission::GetReturnToLaunchAfterMissionRequest* /* request */,
+        rpc::mission::GetReturnToLaunchAfterMissionResponse* response) override
     {
         if (response != nullptr) {
             response->set_enable(_mission.get_return_to_launch_after_mission());
@@ -204,9 +230,9 @@ public:
     }
 
     grpc::Status SetReturnToLaunchAfterMission(
-        grpc::ServerContext * /* context */,
-        const rpc::mission::SetReturnToLaunchAfterMissionRequest *request,
-        rpc::mission::SetReturnToLaunchAfterMissionResponse * /* response */) override
+        grpc::ServerContext* /* context */,
+        const rpc::mission::SetReturnToLaunchAfterMissionRequest* request,
+        rpc::mission::SetReturnToLaunchAfterMissionResponse* /* response */) override
     {
         if (request != nullptr) {
             _mission.set_return_to_launch_after_mission(request->enable());
@@ -215,8 +241,9 @@ public:
         return grpc::Status::OK;
     }
 
-    static void translateMissionItem(const std::shared_ptr<MissionItem> mission_item,
-                                     rpc::mission::MissionItem *rpc_mission_item)
+    static void translateMissionItem(
+        const std::shared_ptr<MissionItem> mission_item,
+        rpc::mission::MissionItem* rpc_mission_item)
     {
         rpc_mission_item->set_latitude_deg(mission_item->get_latitude_deg());
         rpc_mission_item->set_longitude_deg(mission_item->get_longitude_deg());
@@ -252,17 +279,18 @@ public:
     }
 
     static std::shared_ptr<MissionItem>
-    translateRPCMissionItem(const rpc::mission::MissionItem &rpc_mission_item)
+    translateRPCMissionItem(const rpc::mission::MissionItem& rpc_mission_item)
     {
         auto mission_item = std::make_shared<MissionItem>();
-        mission_item->set_position(rpc_mission_item.latitude_deg(),
-                                   rpc_mission_item.longitude_deg());
+        mission_item->set_position(
+            rpc_mission_item.latitude_deg(), rpc_mission_item.longitude_deg());
         mission_item->set_relative_altitude(rpc_mission_item.relative_altitude_m());
         mission_item->set_speed(rpc_mission_item.speed_m_s());
         mission_item->set_fly_through(rpc_mission_item.is_fly_through());
-        mission_item->set_gimbal_pitch_and_yaw(rpc_mission_item.gimbal_pitch_deg(),
-                                               rpc_mission_item.gimbal_yaw_deg());
+        mission_item->set_gimbal_pitch_and_yaw(
+            rpc_mission_item.gimbal_pitch_deg(), rpc_mission_item.gimbal_yaw_deg());
         mission_item->set_camera_action(translateRPCCameraAction(rpc_mission_item.camera_action()));
+        mission_item->set_camera_photo_interval(rpc_mission_item.camera_photo_interval_s());
         mission_item->set_loiter_time(rpc_mission_item.loiter_time_s());
 
         return mission_item;
@@ -292,7 +320,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<MissionItem>>
-    extractMissionItems(const rpc::mission::UploadMissionRequest *request) const
+    extractMissionItems(const rpc::mission::UploadMissionRequest* request) const
     {
         std::vector<std::shared_ptr<MissionItem>> mission_items;
 
@@ -305,13 +333,13 @@ private:
         return mission_items;
     }
 
-    void uploadMissionItems(const std::vector<std::shared_ptr<MissionItem>> &mission_items,
-                            rpc::mission::UploadMissionResponse *response,
-                            std::promise<void> &result_promise) const
+    void uploadMissionItems(
+        const std::vector<std::shared_ptr<MissionItem>>& mission_items,
+        rpc::mission::UploadMissionResponse* response,
+        std::promise<void>& result_promise) const
     {
         _mission.upload_mission_async(
-            mission_items,
-            [this, response, &result_promise](const dronecode_sdk::Mission::Result result) {
+            mission_items, [this, response, &result_promise](const mavsdk::Mission::Result result) {
                 if (response != nullptr) {
                     auto rpc_mission_result = generateRPCMissionResult(result);
                     response->set_allocated_mission_result(rpc_mission_result);
@@ -321,21 +349,21 @@ private:
             });
     }
 
-    rpc::mission::MissionResult *
-    generateRPCMissionResult(const dronecode_sdk::Mission::Result result) const
+    rpc::mission::MissionResult*
+    generateRPCMissionResult(const mavsdk::Mission::Result result) const
     {
         auto rpc_result = static_cast<rpc::mission::MissionResult::Result>(result);
 
         auto rpc_mission_result = new rpc::mission::MissionResult();
         rpc_mission_result->set_result(rpc_result);
-        rpc_mission_result->set_result_str(dronecode_sdk::Mission::result_str(result));
+        rpc_mission_result->set_result_str(mavsdk::Mission::result_str(result));
 
         return rpc_mission_result;
     }
 
-    Mission &_mission;
+    Mission& _mission;
     std::mutex _write_mutex{};
 };
 
 } // namespace backend
-} // namespace dronecode_sdk
+} // namespace mavsdk

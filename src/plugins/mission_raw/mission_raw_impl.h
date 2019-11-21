@@ -7,11 +7,11 @@
 #include "plugin_impl_base.h"
 #include "system.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class MissionRawImpl : public PluginImplBase {
 public:
-    MissionRawImpl(System &system);
+    MissionRawImpl(System& system);
     ~MissionRawImpl();
 
     void init() override;
@@ -20,18 +20,18 @@ public:
     void enable() override;
     void disable() override;
 
-    void download_mission_async(const MissionRaw::mission_items_and_result_callback_t &callback);
+    void download_mission_async(const MissionRaw::mission_items_and_result_callback_t& callback);
     void download_mission_cancel();
 
     void subscribe_mission_changed(MissionRaw::mission_changed_callback_t callback);
 
-    MissionRawImpl(const MissionRawImpl &) = delete;
-    const MissionRawImpl &operator=(const MissionRawImpl &) = delete;
+    MissionRawImpl(const MissionRawImpl&) = delete;
+    const MissionRawImpl& operator=(const MissionRawImpl&) = delete;
 
 private:
-    void process_mission_ack(const mavlink_message_t &message);
-    void process_mission_count(const mavlink_message_t &message);
-    void process_mission_item_int(const mavlink_message_t &message);
+    void process_mission_ack(const mavlink_message_t& message);
+    void process_mission_count(const mavlink_message_t& message);
+    void process_mission_item_int(const mavlink_message_t& message);
     void do_download_step();
     void request_list();
     void request_item();
@@ -53,8 +53,8 @@ private:
         unsigned next_mission_item_to_download{0};
     } _mission_download{};
 
-    void *_timeout_cookie{nullptr};
+    void* _timeout_cookie{nullptr};
     static constexpr double RETRY_TIMEOUT_S = 0.250;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

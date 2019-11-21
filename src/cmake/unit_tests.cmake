@@ -1,6 +1,5 @@
 include_directories(${PROJECT_SOURCE_DIR}/core)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/mavlink/include)
-include_directories(${CURL_INCLUDE_DIRS})
 
 add_executable(unit_tests_runner
     ${UNIT_TEST_SOURCES}
@@ -13,10 +12,11 @@ set_target_properties(unit_tests_runner
 )
 
 target_link_libraries(unit_tests_runner
-    dronecode_sdk
-    dronecode_sdk_mission
-    dronecode_sdk_camera
-    dronecode_sdk_calibration
+    mavsdk
+    mavsdk_mission
+    mavsdk_camera
+    mavsdk_calibration
+    CURL::libcurl
     gtest
     gtest_main
     gmock

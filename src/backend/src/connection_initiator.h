@@ -6,15 +6,15 @@
 #include "connection_result.h"
 #include "log.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace backend {
 
-template<typename DronecodeSDK> class ConnectionInitiator {
+template<typename Mavsdk> class ConnectionInitiator {
 public:
     ConnectionInitiator() {}
     ~ConnectionInitiator() {}
 
-    bool start(DronecodeSDK &dc, const std::string &connection_url)
+    bool start(Mavsdk& dc, const std::string& connection_url)
     {
         init_mutex();
         init_timeout_logging(dc);
@@ -33,15 +33,15 @@ public:
 private:
     void init_mutex() { _discovery_promise = std::make_shared<std::promise<uint64_t>>(); }
 
-    void init_timeout_logging(DronecodeSDK &dc) const
+    void init_timeout_logging(Mavsdk& dc) const
     {
         dc.register_on_timeout(
             [](uint64_t uuid) { LogInfo() << "System timed out [UUID: " << uuid << "]"; });
     }
 
-    bool add_any_connection(DronecodeSDK &dc, const std::string &connection_url)
+    bool add_any_connection(Mavsdk& dc, const std::string& connection_url)
     {
-        dronecode_sdk::ConnectionResult connection_result = dc.add_any_connection(connection_url);
+        mavsdk::ConnectionResult connection_result = dc.add_any_connection(connection_url);
 
         if (connection_result != ConnectionResult::SUCCESS) {
             LogErr() << "Connection failed: " << connection_result_str(connection_result);
@@ -51,7 +51,7 @@ private:
         return true;
     }
 
-    std::future<uint64_t> wrapped_register_on_discover(DronecodeSDK &dc)
+    std::future<uint64_t> wrapped_register_on_discover(Mavsdk& dc)
     {
         auto future = _discovery_promise->get_future();
 
@@ -73,4 +73,4 @@ private:
 };
 
 } // namespace backend
-} // namespace dronecode_sdk
+} // namespace mavsdk

@@ -2,9 +2,9 @@
 #include "backend.h"
 #include <string>
 
-void runBackend(const char *connection_url, void (*onServerStarted)(void *), void *context)
+void runBackend(const char* connection_url, void (*onServerStarted)(void*), void* context)
 {
-    dronecode_sdk::backend::DronecodeSDKBackend backend;
+    mavsdk::backend::MavsdkBackend backend;
     backend.startGRPCServer();
     backend.connect(std::string(connection_url));
 

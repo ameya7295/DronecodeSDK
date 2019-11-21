@@ -8,7 +8,7 @@
 
 #include "mission_item_impl.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 MissionItem::MissionItem() : _impl{new MissionItemImpl()} {}
 
@@ -137,7 +137,7 @@ std::string MissionItem::to_str(MissionItem::CameraAction camera_action)
     }
 }
 
-bool operator==(const MissionItem &lhs, const MissionItem &rhs)
+bool operator==(const MissionItem& lhs, const MissionItem& rhs)
 {
     // For latitude and longitude we expect precision down to 1e-7 because the
     // underlying transport happens with int at 1e7.
@@ -212,7 +212,7 @@ bool operator==(const MissionItem &lhs, const MissionItem &rhs)
     return true;
 }
 
-std::ostream &operator<<(std::ostream &str, MissionItem const &mission_item)
+std::ostream& operator<<(std::ostream& str, MissionItem const& mission_item)
 {
     return str << std::endl
                << "[" << std::endl
@@ -231,7 +231,7 @@ std::ostream &operator<<(std::ostream &str, MissionItem const &mission_item)
                << "]" << std::endl;
 }
 
-std::ostream &operator<<(std::ostream &str, MissionItem::CameraAction const &camera_action)
+std::ostream& operator<<(std::ostream& str, MissionItem::CameraAction const& camera_action)
 {
     switch (camera_action) {
         case MissionItem::CameraAction::TAKE_PHOTO:
@@ -251,4 +251,4 @@ std::ostream &operator<<(std::ostream &str, MissionItem::CameraAction const &cam
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

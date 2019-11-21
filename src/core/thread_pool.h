@@ -9,7 +9,7 @@
 #include "global_include.h"
 #include "safe_queue.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class ThreadPool {
 public:
@@ -17,10 +17,10 @@ public:
     ~ThreadPool();
 
     // delete copy and move constructors and assign operators
-    ThreadPool(ThreadPool const &) = delete; // Copy construct
-    ThreadPool(ThreadPool &&) = delete; // Move construct
-    ThreadPool &operator=(ThreadPool const &) = delete; // Copy assign
-    ThreadPool &operator=(ThreadPool &&) = delete; // Move assign
+    ThreadPool(ThreadPool const&) = delete; // Copy construct
+    ThreadPool(ThreadPool&&) = delete; // Move construct
+    ThreadPool& operator=(ThreadPool const&) = delete; // Copy assign
+    ThreadPool& operator=(ThreadPool&&) = delete; // Move assign
 
     bool start();
     bool stop();
@@ -35,4 +35,4 @@ private:
     SafeQueue<std::function<void()>> _work_queue{};
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

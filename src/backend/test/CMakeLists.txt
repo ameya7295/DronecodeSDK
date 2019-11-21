@@ -25,11 +25,18 @@ target_include_directories(unit_tests_backend
 target_include_directories(unit_tests_backend
     SYSTEM
     PRIVATE
-    ${CMAKE_BINARY_DIR}/src/backend/src
+    ${PROJECT_SOURCE_DIR}/backend/src/generated
 )
 
 target_link_libraries(unit_tests_backend
-    backend
+    mavsdk_server
+    mavsdk_action
+    mavsdk_camera
+    mavsdk_info
+    mavsdk_mission
+    mavsdk_offboard
+    mavsdk_telemetry
+    gRPC::grpc++
     gtest
     gmock
     gmock_main

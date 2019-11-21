@@ -1,9 +1,9 @@
 #include "example.h"
 #include "example_impl.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-Example::Example(System &system) : PluginBase()
+Example::Example(System& system) : PluginBase()
 {
     _impl = new ExampleImpl(system);
 }
@@ -18,4 +18,4 @@ void Example::say_hello() const
     _impl->say_hello();
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

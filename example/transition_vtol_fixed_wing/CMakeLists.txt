@@ -8,14 +8,14 @@ else()
     add_definitions("-std=c++11 -WX -W2")
 endif()
 
-find_package(DronecodeSDK REQUIRED)
+find_package(MAVSDK REQUIRED)
 
 add_executable(transition_vtol_fixed_wing
     transition_vtol_fixed_wing.cpp
 )
 
 target_link_libraries(transition_vtol_fixed_wing
-    DronecodeSDK::dronecode_sdk_action
-    DronecodeSDK::dronecode_sdk_telemetry
-    DronecodeSDK::dronecode_sdk
+    MAVSDK::mavsdk_action
+    MAVSDK::mavsdk_telemetry
+    MAVSDK::mavsdk
 )

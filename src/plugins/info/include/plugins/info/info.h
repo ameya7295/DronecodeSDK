@@ -6,7 +6,7 @@
 
 #include "plugin_base.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class System;
 class InfoImpl;
@@ -27,7 +27,7 @@ public:
      *
      * @param system The specific system associated with this plugin.
      */
-    explicit Info(System &system);
+    explicit Info(System& system);
 
     /**
      * @brief Destructor (internal use only).
@@ -37,7 +37,7 @@ public:
     /**
      * @brief Possible results returned for requests.
      *
-     * @note DronecodeSDK does not throw exceptions. Instead a result of this
+     * @note Mavsdk does not throw exceptions. Instead a result of this
      * type will be returned.
      */
     enum class Result {
@@ -127,15 +127,15 @@ public:
     /**
      * @brief Copy Constructor (object is not copyable).
      */
-    Info(const Info &) = delete;
+    Info(const Info&) = delete;
     /**
      * @brief Equality operator (object is not copyable).
      */
-    const Info &operator=(const Info &) = delete;
+    const Info& operator=(const Info&) = delete;
 
 private:
     /** @private Underlying implementation, set at instantiation */
     std::unique_ptr<InfoImpl> _impl;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

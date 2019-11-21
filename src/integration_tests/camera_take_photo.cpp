@@ -5,11 +5,11 @@
 #include <future>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "system.h"
 #include "camera_test_helpers.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
 static void receive_camera_result(Camera::Result result);
@@ -21,7 +21,7 @@ static std::atomic<bool> _received_capture_info{false};
 
 TEST(CameraTest, TakePhotoSingle)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -29,7 +29,7 @@ TEST(CameraTest, TakePhotoSingle)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_camera());
     auto camera = std::make_shared<Camera>(system);
 
@@ -49,7 +49,7 @@ TEST(CameraTest, TakePhotoSingle)
 
 TEST(CameraTest, TakePhotosMultiple)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     const int num_photos_to_take = 3;
 
@@ -59,7 +59,7 @@ TEST(CameraTest, TakePhotosMultiple)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_camera());
     auto camera = std::make_shared<Camera>(system);
 

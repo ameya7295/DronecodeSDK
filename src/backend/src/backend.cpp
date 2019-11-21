@@ -3,18 +3,18 @@
 #include <memory>
 
 #include "connection_initiator.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "grpc_server.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace backend {
 
-class DronecodeSDKBackend::Impl {
+class MavsdkBackend::Impl {
 public:
     Impl() {}
     ~Impl() {}
 
-    void connect(const std::string &connection_url)
+    void connect(const std::string& connection_url)
     {
         _connection_initiator.start(_dc, connection_url);
         _connection_initiator.wait();
@@ -29,26 +29,26 @@ public:
     void wait() { _server->wait(); }
 
 private:
-    DronecodeSDK _dc;
-    ConnectionInitiator<dronecode_sdk::DronecodeSDK> _connection_initiator;
+    Mavsdk _dc;
+    ConnectionInitiator<mavsdk::Mavsdk> _connection_initiator;
     std::unique_ptr<GRPCServer> _server;
 };
 
-DronecodeSDKBackend::DronecodeSDKBackend() : _impl(new Impl()) {}
-DronecodeSDKBackend::~DronecodeSDKBackend() = default;
+MavsdkBackend::MavsdkBackend() : _impl(new Impl()) {}
+MavsdkBackend::~MavsdkBackend() = default;
 
-void DronecodeSDKBackend::startGRPCServer()
+void MavsdkBackend::startGRPCServer()
 {
     _impl->startGRPCServer();
 }
-void DronecodeSDKBackend::connect(const std::string &connection_url)
+void MavsdkBackend::connect(const std::string& connection_url)
 {
     return _impl->connect(connection_url);
 }
-void DronecodeSDKBackend::wait()
+void MavsdkBackend::wait()
 {
     _impl->wait();
 }
 
 } // namespace backend
-} // namespace dronecode_sdk
+} // namespace mavsdk

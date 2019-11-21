@@ -13,15 +13,15 @@ else()
     add_definitions("-std=c++11 -Wall -Wextra -Werror")
 endif()
 
-find_package(DronecodeSDK REQUIRED)
+find_package(MAVSDK REQUIRED)
 
 add_executable(offboard
     offboard_velocity.cpp
 )
 
 target_link_libraries(offboard
-    DronecodeSDK::dronecode_sdk_action
-    DronecodeSDK::dronecode_sdk_offboard
-    DronecodeSDK::dronecode_sdk_telemetry
-    DronecodeSDK::dronecode_sdk
+    MAVSDK::mavsdk_action
+    MAVSDK::mavsdk_offboard
+    MAVSDK::mavsdk_telemetry
+    MAVSDK::mavsdk
 )

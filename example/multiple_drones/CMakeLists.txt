@@ -10,15 +10,15 @@ else()
     add_definitions("-std=c++11 -WX -W2")
 endif()
 
-find_package(DronecodeSDK REQUIRED)
+find_package(MAVSDK REQUIRED)
 
 add_executable(multiple_drones
     multiple_drones.cpp
 )
 
 target_link_libraries(multiple_drones
-    DronecodeSDK::dronecode_sdk_telemetry
-    DronecodeSDK::dronecode_sdk_action
-    DronecodeSDK::dronecode_sdk
+    MAVSDK::mavsdk_telemetry
+    MAVSDK::mavsdk_action
+    MAVSDK::mavsdk
     ${CMAKE_THREAD_LIBS_INIT}
 )

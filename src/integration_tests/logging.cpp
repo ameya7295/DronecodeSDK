@@ -1,20 +1,20 @@
 #include <iostream>
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "integration_test_helper.h"
 #include "plugins/logging/logging.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST_F(SitlTest, Logging)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dc.system();
+    System& system = dc.system();
     auto logging = std::make_shared<Logging>(system);
     Logging::Result log_ret = logging->start_logging();
 

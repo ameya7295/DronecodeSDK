@@ -2,13 +2,13 @@
 
 #include <string>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class CliArg {
 public:
     enum class Protocol { NONE, UDP, TCP, SERIAL };
 
-    bool parse(const std::string &uri);
+    bool parse(const std::string& uri);
 
     Protocol get_protocol() { return _protocol; }
 
@@ -20,10 +20,10 @@ public:
 
 private:
     void reset();
-    bool find_protocol(std::string &rest);
-    bool find_path(std::string &rest);
-    bool find_port(std::string &rest);
-    bool find_baudrate(std::string &rest);
+    bool find_protocol(std::string& rest);
+    bool find_path(std::string& rest);
+    bool find_port(std::string& rest);
+    bool find_baudrate(std::string& rest);
 
     Protocol _protocol{Protocol::NONE};
     std::string _path{};
@@ -31,4 +31,4 @@ private:
     int _baudrate{0};
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

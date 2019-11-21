@@ -2,14 +2,14 @@
 #include "system_impl.h"
 #include <memory>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class System;
 class SystemImpl;
 
 class PluginImplBase {
 public:
-    explicit PluginImplBase(System &system);
+    explicit PluginImplBase(System& system);
     virtual ~PluginImplBase() = default;
 
     /*
@@ -24,7 +24,7 @@ public:
 
     /*
      * The method `deinit()` is called before a plugin is destructed which happens
-     * usually only at the very end when a DronecodeSDK instance is destructed.
+     * usually only at the very end when a Mavsdk instance is destructed.
      *
      * Plugins should do any cleanup of what has been set up during init.
      */
@@ -54,11 +54,11 @@ public:
     virtual void disable() = 0;
 
     // Non-copyable
-    PluginImplBase(const PluginImplBase &) = delete;
-    const PluginImplBase &operator=(const PluginImplBase &) = delete;
+    PluginImplBase(const PluginImplBase&) = delete;
+    const PluginImplBase& operator=(const PluginImplBase&) = delete;
 
 protected:
     std::shared_ptr<SystemImpl> _parent;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

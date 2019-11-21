@@ -11,7 +11,7 @@
 #undef ERROR
 #endif
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class MissionImpl;
 class System;
@@ -32,7 +32,7 @@ public:
      *
      * @param system The specific system associated with this plugin.
      */
-    explicit Mission(System &system);
+    explicit Mission(System& system);
 
     /**
      * @brief Destructor (internal use only).
@@ -64,7 +64,7 @@ public:
      * @param result Enum for which string is required.
      * @return Human readable string for the Mission::Result.
      */
-    static const char *result_str(Result result);
+    static const char* result_str(Result result);
 
     /**
      * @brief Callback type for async mission calls.
@@ -82,7 +82,7 @@ public:
      * The method composes the plan into a vector of MissionItem shared pointers that can
      * then be uploaded to a vehicle.
      * The method will fail if any of the imported mission items are not supported
-     * by the Dronecode SDK API.
+     * by the MAVSDK API.
      *
      * @param[out] mission_items Vector of mission items imported from QGC plan.
      * @param qgc_plan_file File path of the QGC plan.
@@ -92,8 +92,8 @@ public:
      *     Otherwise one of the error codes: Result::FAILED_TO_OPEN_QGC_PLAN,
      *     Result::FAILED_TO_PARSE_QGC_PLAN, Result::UNSUPPORTED_MISSION_CMD.
      */
-    static Result import_qgroundcontrol_mission(mission_items_t &mission_items,
-                                                const std::string &qgc_plan_file);
+    static Result
+    import_qgroundcontrol_mission(mission_items_t& mission_items, const std::string& qgc_plan_file);
 
     /**
      * @brief Uploads a vector of mission items to the system (asynchronous).
@@ -104,8 +104,8 @@ public:
      * @param mission_items Reference to vector of mission items.
      * @param callback Callback to receive result of this request.
      */
-    void upload_mission_async(const std::vector<std::shared_ptr<MissionItem>> &mission_items,
-                              result_callback_t callback);
+    void upload_mission_async(
+        const std::vector<std::shared_ptr<MissionItem>>& mission_items, result_callback_t callback);
 
     /**
      * @brief Cancel a mission upload (asynchronous).
@@ -125,7 +125,7 @@ public:
      * @brief Downloads a vector of mission items from the system (asynchronous).
      *
      * The method will fail if any of the downloaded mission items are not supported
-     * by the Dronecode SDK API.
+     * by the MAVSDK API.
      *
      * @param callback Callback to receive mission items and result of this request.
      */
@@ -181,6 +181,13 @@ public:
      * @param callback Callback to receive result of this request.
      */
     void pause_mission_async(result_callback_t callback);
+
+    /**
+     * @brief Clears the mission saved on the vehicle (asynchronous).
+     *
+     * @param callback Callback to receive result of this request.
+     */
+    void clear_mission_async(result_callback_t callback);
 
     /**
      * @brief Sets the mission item index to go to (asynchronous).
@@ -241,15 +248,15 @@ public:
     /**
      * @brief Copy constructor (object is not copyable).
      */
-    Mission(const Mission &) = delete;
+    Mission(const Mission&) = delete;
     /**
      * @brief Equality operator (object is not copyable).
      */
-    const Mission &operator=(const Mission &) = delete;
+    const Mission& operator=(const Mission&) = delete;
 
 private:
     /** @private Underlying implementation, set at instantiation */
     std::unique_ptr<MissionImpl> _impl;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

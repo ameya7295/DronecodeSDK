@@ -2,25 +2,25 @@
 
 #include "plugin_base.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class System;
 class ExampleImpl;
 
 class Example : public PluginBase {
 public:
-    explicit Example(System &system);
+    explicit Example(System& system);
     ~Example();
 
     void say_hello() const;
 
     // Non-copyable
-    Example(const Example &) = delete;
-    const Example &operator=(const Example &) = delete;
+    Example(const Example&) = delete;
+    const Example& operator=(const Example&) = delete;
 
 private:
     // Underlying implementation, set at instantiation
-    ExampleImpl *_impl;
+    ExampleImpl* _impl;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

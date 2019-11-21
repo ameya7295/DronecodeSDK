@@ -6,14 +6,14 @@ include_directories(
 
 configure_file(version.h.in version.h)
 
-add_library(dronecode_sdk
+add_library(mavsdk
     call_every_handler.cpp
     connection.cpp
     curl_wrapper.cpp
     system.cpp
     system_impl.cpp
-    dronecode_sdk.cpp
-    dronecode_sdk_impl.cpp
+    mavsdk.cpp
+    mavsdk_impl.cpp
     global_include.cpp
     http_loader.cpp
     mavlink_parameters.cpp
@@ -28,16 +28,18 @@ add_library(dronecode_sdk
     log.cpp
     cli_arg.cpp
     thread_pool.cpp
+    geometry.cpp
 )
 
-target_link_libraries(dronecode_sdk
-    tinyxml2::tinyxml2
+target_link_libraries(mavsdk
+    PRIVATE
     CURL::libcurl
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if (IOS)
-    target_link_libraries(dronecode_sdk
+    target_link_libraries(mavsdk
+        PUBLIC
         "-framework Foundation"
         "-framework Security"
     )
@@ -45,28 +47,33 @@ endif()
 
 # Link to Windows networking lib.
 if (MSVC OR MINGW)
-    target_link_libraries(dronecode_sdk
+    target_link_libraries(mavsdk
+        PRIVATE
         ws2_32
     )
 endif()
 
 if(ANDROID)
-    target_link_libraries(dronecode_sdk
+    target_link_libraries(mavsdk
+        PRIVATE
         log
     )
 endif()
 
-set_target_properties(dronecode_sdk
+set_target_properties(mavsdk
     PROPERTIES COMPILE_FLAGS ${warnings}
     )
 
-target_include_directories(dronecode_sdk PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+target_include_directories(mavsdk
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
     )
 
-install(TARGETS dronecode_sdk
-    EXPORT dronecode-sdk-targets
+install(TARGETS mavsdk
+    EXPORT mavsdk-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
@@ -74,9 +81,10 @@ install(TARGETS dronecode_sdk
 install(FILES
     connection_result.h
     system.h
-    dronecode_sdk.h
+    mavsdk.h
     plugin_base.h
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/dronecode_sdk"
+    geometry.h
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mavsdk"
 )
 
 list(APPEND UNIT_TEST_SOURCES
@@ -92,5 +100,7 @@ list(APPEND UNIT_TEST_SOURCES
     ${PROJECT_SOURCE_DIR}/core/cli_arg_test.cpp
     ${PROJECT_SOURCE_DIR}/core/locked_queue_test.cpp
     ${PROJECT_SOURCE_DIR}/core/thread_pool_test.cpp
+    ${PROJECT_SOURCE_DIR}/core/mavsdk_test.cpp
+    ${PROJECT_SOURCE_DIR}/core/geometry_test.cpp
 )
 set(UNIT_TEST_SOURCES ${UNIT_TEST_SOURCES} PARENT_SCOPE)

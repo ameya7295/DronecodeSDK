@@ -1,9 +1,9 @@
 #pragma once
 
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include <cmath>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 class PathChecker {
 public:
@@ -22,4 +22,4 @@ private:
     float _margin_m = 1.0f;
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

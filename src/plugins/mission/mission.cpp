@@ -5,14 +5,14 @@
 #include "mavlink_include.h"
 #include "mission_impl.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-Mission::Mission(System &system) : PluginBase(), _impl{new MissionImpl(system)} {}
+Mission::Mission(System& system) : PluginBase(), _impl{new MissionImpl(system)} {}
 
 Mission::~Mission() {}
 
-void Mission::upload_mission_async(const std::vector<std::shared_ptr<MissionItem>> &mission_items,
-                                   result_callback_t callback)
+void Mission::upload_mission_async(
+    const std::vector<std::shared_ptr<MissionItem>>& mission_items, result_callback_t callback)
 {
     _impl->upload_mission_async(mission_items, callback);
 }
@@ -52,6 +52,11 @@ void Mission::pause_mission_async(result_callback_t callback)
     _impl->pause_mission_async(callback);
 }
 
+void Mission::clear_mission_async(result_callback_t callback)
+{
+    _impl->clear_mission_async(callback);
+}
+
 void Mission::set_current_mission_item_async(int current, result_callback_t callback)
 {
     _impl->set_current_mission_item_async(current, callback);
@@ -62,7 +67,7 @@ bool Mission::mission_finished() const
     return _impl->is_mission_finished();
 }
 
-const char *Mission::result_str(Result result)
+const char* Mission::result_str(Result result)
 {
     switch (result) {
         case Result::SUCCESS:
@@ -110,10 +115,10 @@ void Mission::subscribe_progress(progress_callback_t callback)
     _impl->subscribe_progress(callback);
 }
 
-Mission::Result Mission::import_qgroundcontrol_mission(Mission::mission_items_t &mission_items,
-                                                       const std::string &qgc_plan_file)
+Mission::Result Mission::import_qgroundcontrol_mission(
+    Mission::mission_items_t& mission_items, const std::string& qgc_plan_file)
 {
     return MissionImpl::import_qgroundcontrol_mission(mission_items, qgc_plan_file);
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

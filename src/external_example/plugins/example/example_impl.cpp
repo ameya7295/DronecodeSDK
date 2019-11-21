@@ -2,9 +2,9 @@
 #include "global_include.h"
 #include <functional>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-ExampleImpl::ExampleImpl(System &system) : PluginImplBase(system)
+ExampleImpl::ExampleImpl(System& system) : PluginImplBase(system)
 {
     _parent->register_plugin(this);
 }
@@ -36,11 +36,11 @@ void ExampleImpl::say_hello() const
     LogInfo() << "Hello world, I'm a new plugin.";
 }
 
-void ExampleImpl::process_heartbeat(const mavlink_message_t &message)
+void ExampleImpl::process_heartbeat(const mavlink_message_t& message)
 {
     UNUSED(message);
 
     LogDebug() << "I received a heartbeat";
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

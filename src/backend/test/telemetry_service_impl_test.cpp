@@ -15,31 +15,37 @@ namespace {
 using testing::_;
 using testing::NiceMock;
 
-using MockTelemetry = NiceMock<dronecode_sdk::testing::MockTelemetry>;
-using TelemetryServiceImpl = dronecode_sdk::backend::TelemetryServiceImpl<MockTelemetry>;
-using TelemetryService = dronecode_sdk::rpc::telemetry::TelemetryService;
+using MockTelemetry = NiceMock<mavsdk::testing::MockTelemetry>;
+using TelemetryServiceImpl = mavsdk::backend::TelemetryServiceImpl<MockTelemetry>;
+using TelemetryService = mavsdk::rpc::telemetry::TelemetryService;
 
-using PositionResponse = dronecode_sdk::rpc::telemetry::PositionResponse;
-using Position = dronecode_sdk::Telemetry::Position;
+using PositionResponse = mavsdk::rpc::telemetry::PositionResponse;
+using Position = mavsdk::Telemetry::Position;
 
-using HealthResponse = dronecode_sdk::rpc::telemetry::HealthResponse;
-using Health = dronecode_sdk::Telemetry::Health;
+using HealthResponse = mavsdk::rpc::telemetry::HealthResponse;
+using Health = mavsdk::Telemetry::Health;
 
-using GpsInfo = dronecode_sdk::Telemetry::GPSInfo;
-using FixType = dronecode_sdk::rpc::telemetry::FixType;
+using GpsInfo = mavsdk::Telemetry::GPSInfo;
+using FixType = mavsdk::rpc::telemetry::FixType;
 
-using Battery = dronecode_sdk::Telemetry::Battery;
+using Battery = mavsdk::Telemetry::Battery;
 
-using FlightMode = dronecode_sdk::Telemetry::FlightMode;
-using RPCFlightMode = dronecode_sdk::rpc::telemetry::FlightMode;
+using FlightMode = mavsdk::Telemetry::FlightMode;
+using RPCFlightMode = mavsdk::rpc::telemetry::FlightMode;
 
-using Quaternion = dronecode_sdk::Telemetry::Quaternion;
+using Quaternion = mavsdk::Telemetry::Quaternion;
 
-using EulerAngle = dronecode_sdk::Telemetry::EulerAngle;
+using EulerAngle = mavsdk::Telemetry::EulerAngle;
 
-using GroundSpeedNed = dronecode_sdk::Telemetry::GroundSpeedNED;
+using AngularVelocityBody = mavsdk::Telemetry::AngularVelocityBody;
 
-using RcStatus = dronecode_sdk::Telemetry::RCStatus;
+using GroundSpeedNed = mavsdk::Telemetry::GroundSpeedNED;
+
+using RcStatus = mavsdk::Telemetry::RCStatus;
+
+using ActuatorControlTarget = mavsdk::Telemetry::ActuatorControlTarget;
+
+using ActuatorOutputStatus = mavsdk::Telemetry::ActuatorOutputStatus;
 
 class TelemetryServiceImplTest : public ::testing::Test {
 protected:
@@ -62,69 +68,88 @@ protected:
 
     virtual void TearDown() { _server->Shutdown(); }
 
-    std::future<void> subscribePositionAsync(std::vector<Position> &positions);
-    Position createPosition(const double lat,
-                            const double lng,
-                            const float abs_alt,
-                            const float rel_alt) const;
-    void checkSendsPositions(const std::vector<Position> &positions);
+    std::future<void> subscribePositionAsync(std::vector<Position>& positions);
+    Position createPosition(
+        const double lat, const double lng, const float abs_alt, const float rel_alt) const;
+    void checkSendsPositions(const std::vector<Position>& positions);
 
-    std::future<void> subscribeHealthAsync(std::vector<Health> &healths);
-    void checkSendsHealths(const std::vector<Health> &healths);
+    std::future<void> subscribeHealthAsync(std::vector<Health>& healths);
+    void checkSendsHealths(const std::vector<Health>& healths);
     Health createRandomHealth();
     std::vector<Health> generateRandomHealthsVector(const int size);
     bool generateRandomBool();
 
-    void checkSendsHomePositions(const std::vector<Position> &home_positions) const;
-    std::future<void> subscribeHomeAsync(std::vector<Position> &home_positions) const;
+    void checkSendsHomePositions(const std::vector<Position>& home_positions) const;
+    std::future<void> subscribeHomeAsync(std::vector<Position>& home_positions) const;
 
-    void checkSendsInAirEvents(const std::vector<bool> &in_air_events) const;
-    std::future<void> subscribeInAirAsync(std::vector<bool> &in_air_events) const;
+    void checkSendsInAirEvents(const std::vector<bool>& in_air_events) const;
+    std::future<void> subscribeInAirAsync(std::vector<bool>& in_air_events) const;
 
-    void checkSendsArmedEvents(const std::vector<bool> &armed_events) const;
-    std::future<void> subscribeArmedAsync(std::vector<bool> &armed_events) const;
+    void checkSendsArmedEvents(const std::vector<bool>& armed_events) const;
+    std::future<void> subscribeArmedAsync(std::vector<bool>& armed_events) const;
 
     GpsInfo createGpsInfo(const int num_satellites, const int fix_type) const;
-    void checkSendsGpsInfoEvents(const std::vector<GpsInfo> &gps_info_events) const;
-    std::future<void> subscribeGpsInfoAsync(std::vector<GpsInfo> &gps_info_events) const;
+    void checkSendsGpsInfoEvents(const std::vector<GpsInfo>& gps_info_events) const;
+    std::future<void> subscribeGpsInfoAsync(std::vector<GpsInfo>& gps_info_events) const;
     int translateRPCGpsFixType(const FixType rpc_fix_type) const;
 
-    void checkSendsBatteryEvents(const std::vector<Battery> &battery_events) const;
+    void checkSendsBatteryEvents(const std::vector<Battery>& battery_events) const;
     Battery createBattery(const float voltage_v, const float remaining_percent) const;
-    std::future<void> subscribeBatteryAsync(std::vector<Battery> &battery_events) const;
+    std::future<void> subscribeBatteryAsync(std::vector<Battery>& battery_events) const;
 
-    void checkSendsFlightModeEvents(const std::vector<FlightMode> &flight_mode_events) const;
+    void checkSendsFlightModeEvents(const std::vector<FlightMode>& flight_mode_events) const;
     FlightMode translateRPCFlightMode(const RPCFlightMode rpc_flight_mode) const;
-    std::future<void> subscribeFlightModeAsync(std::vector<FlightMode> &flight_mode_events) const;
+    std::future<void> subscribeFlightModeAsync(std::vector<FlightMode>& flight_mode_events) const;
 
-    void checkSendsAttitudeQuaternions(const std::vector<Quaternion> &quaternions) const;
+    void checkSendsAttitudeQuaternions(const std::vector<Quaternion>& quaternions) const;
     Quaternion createQuaternion(const float w, const float x, const float y, const float z) const;
-    std::future<void> subscribeAttitudeQuaternionAsync(std::vector<Quaternion> &quaternions) const;
+    std::future<void> subscribeAttitudeQuaternionAsync(std::vector<Quaternion>& quaternions) const;
 
-    void checkSendsAttitudeEulerAngles(const std::vector<EulerAngle> &euler_angles) const;
+    void checkSendsAttitudeAngularVelocitiesBody(
+        const std::vector<AngularVelocityBody>& angular_velocities_body) const;
+    AngularVelocityBody createAngularVelocityBody(
+        const float roll_rad_s, const float pitch_rad_s, const float yaw_rad_s) const;
+    std::future<void> subscribeAttitudeAngularVelocityBodyAsync(
+        std::vector<AngularVelocityBody>& angular_velocities_body) const;
+
+    void checkSendsAttitudeEulerAngles(const std::vector<EulerAngle>& euler_angles) const;
     EulerAngle
     createEulerAngle(const float roll_deg, const float pitch_deg, const float yaw_deg) const;
-    std::future<void> subscribeAttitudeEulerAsync(std::vector<EulerAngle> &euler_angles) const;
+    std::future<void> subscribeAttitudeEulerAsync(std::vector<EulerAngle>& euler_angles) const;
 
-    void checkSendsCameraAttitudeQuaternions(const std::vector<Quaternion> &quaternions) const;
+    void checkSendsCameraAttitudeQuaternions(const std::vector<Quaternion>& quaternions) const;
     std::future<void>
-    subscribeCameraAttitudeQuaternionAsync(std::vector<Quaternion> &quaternions) const;
+    subscribeCameraAttitudeQuaternionAsync(std::vector<Quaternion>& quaternions) const;
 
-    void checkSendsCameraAttitudeEulerAngles(const std::vector<EulerAngle> &euler_angles) const;
+    void checkSendsCameraAttitudeEulerAngles(const std::vector<EulerAngle>& euler_angles) const;
     std::future<void>
-    subscribeCameraAttitudeEulerAsync(std::vector<EulerAngle> &euler_angles) const;
+    subscribeCameraAttitudeEulerAsync(std::vector<EulerAngle>& euler_angles) const;
 
-    void checkSendsGroundSpeedEvents(const std::vector<GroundSpeedNed> &ground_speed_events) const;
+    void checkSendsGroundSpeedEvents(const std::vector<GroundSpeedNed>& ground_speed_events) const;
     GroundSpeedNed
     createGroundSpeedNed(const float vel_north, const float vel_east, const float vel_down) const;
     std::future<void>
-    subscribeGroundSpeedNedAsync(std::vector<GroundSpeedNed> &ground_speed_events) const;
+    subscribeGroundSpeedNedAsync(std::vector<GroundSpeedNed>& ground_speed_events) const;
 
-    void checkSendsRcStatusEvents(const std::vector<RcStatus> &rc_status_events) const;
-    RcStatus createRcStatus(const bool was_available_once,
-                            const bool is_available,
-                            const float signal_strength_percent) const;
-    std::future<void> subscribeRcStatusAsync(std::vector<RcStatus> &rc_status_events) const;
+    void checkSendsRcStatusEvents(const std::vector<RcStatus>& rc_status_events) const;
+    RcStatus createRcStatus(
+        const bool was_available_once,
+        const bool is_available,
+        const float signal_strength_percent) const;
+    std::future<void> subscribeRcStatusAsync(std::vector<RcStatus>& rc_status_events) const;
+
+    void checkSendsActuatorControlTargetEvents(
+        const std::vector<ActuatorControlTarget>& actuator_control_target_events) const;
+    ActuatorControlTarget
+    createActuatorControlTarget(const uint8_t group, const std::vector<float>& controls) const;
+    std::future<void> subscribeActuatorControlTargetAsync(
+        std::vector<ActuatorControlTarget>& actuator_control_target_events) const;
+
+    void checkSendsActuatorOutputStatusEvents(
+        const std::vector<ActuatorOutputStatus>& actuator_output_status_events) const;
+    ActuatorOutputStatus createActuatorOutputStatus(const std::vector<float>& actuators) const;
+    std::future<void> subscribeActuatorOutputStatusAsync(
+        std::vector<ActuatorOutputStatus>& actuator_output_status_events) const;
 
     std::unique_ptr<grpc::Server> _server{};
     std::unique_ptr<TelemetryService::Stub> _stub{};
@@ -162,14 +187,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryPositionAsync)
     position_stream_future.wait();
 }
 
-std::future<void> TelemetryServiceImplTest::subscribePositionAsync(std::vector<Position> &positions)
+std::future<void> TelemetryServiceImplTest::subscribePositionAsync(std::vector<Position>& positions)
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribePositionRequest request;
+        mavsdk::rpc::telemetry::SubscribePositionRequest request;
         auto response_reader = _stub->SubscribePosition(&context, request);
 
-        dronecode_sdk::rpc::telemetry::PositionResponse response;
+        mavsdk::rpc::telemetry::PositionResponse response;
         while (response_reader->Read(&response)) {
             auto position_rpc = response.position();
 
@@ -205,11 +230,11 @@ TEST_F(TelemetryServiceImplTest, sendsOnePosition)
     checkSendsPositions(positions);
 }
 
-void TelemetryServiceImplTest::checkSendsPositions(const std::vector<Position> &positions)
+void TelemetryServiceImplTest::checkSendsPositions(const std::vector<Position>& positions)
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::position_callback_t position_callback;
+    mavsdk::Telemetry::position_callback_t position_callback;
     EXPECT_CALL(*_telemetry, position_async(_))
         .WillOnce(SaveCallback(&position_callback, &subscription_promise));
 
@@ -228,12 +253,10 @@ void TelemetryServiceImplTest::checkSendsPositions(const std::vector<Position> &
     }
 }
 
-Position TelemetryServiceImplTest::createPosition(const double lat,
-                                                  const double lng,
-                                                  const float abs_alt,
-                                                  const float rel_alt) const
+Position TelemetryServiceImplTest::createPosition(
+    const double lat, const double lng, const float abs_alt, const float rel_alt) const
 {
-    dronecode_sdk::Telemetry::Position expected_position;
+    mavsdk::Telemetry::Position expected_position;
 
     expected_position.latitude_deg = lat;
     expected_position.longitude_deg = lng;
@@ -264,14 +287,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryHealthAsync)
     health_stream_future.wait();
 }
 
-std::future<void> TelemetryServiceImplTest::subscribeHealthAsync(std::vector<Health> &healths)
+std::future<void> TelemetryServiceImplTest::subscribeHealthAsync(std::vector<Health>& healths)
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeHealthRequest request;
+        mavsdk::rpc::telemetry::SubscribeHealthRequest request;
         auto response_reader = _stub->SubscribeHealth(&context, request);
 
-        dronecode_sdk::rpc::telemetry::HealthResponse response;
+        mavsdk::rpc::telemetry::HealthResponse response;
         while (response_reader->Read(&response)) {
             auto health_rpc = response.health();
 
@@ -318,11 +341,11 @@ std::vector<Health> TelemetryServiceImplTest::generateRandomHealthsVector(const 
     return healths;
 }
 
-void TelemetryServiceImplTest::checkSendsHealths(const std::vector<Health> &healths)
+void TelemetryServiceImplTest::checkSendsHealths(const std::vector<Health>& healths)
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::health_callback_t health_callback;
+    mavsdk::Telemetry::health_callback_t health_callback;
     EXPECT_CALL(*_telemetry, health_async(_))
         .WillOnce(SaveCallback(&health_callback, &subscription_promise));
 
@@ -343,7 +366,7 @@ void TelemetryServiceImplTest::checkSendsHealths(const std::vector<Health> &heal
 
 Health TelemetryServiceImplTest::createRandomHealth()
 {
-    dronecode_sdk::Telemetry::Health health;
+    mavsdk::Telemetry::Health health;
 
     health.gyrometer_calibration_ok = generateRandomBool();
     health.accelerometer_calibration_ok = generateRandomBool();
@@ -379,14 +402,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryHomeAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeHomeAsync(std::vector<Position> &home_positions) const
+TelemetryServiceImplTest::subscribeHomeAsync(std::vector<Position>& home_positions) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeHomeRequest request;
+        mavsdk::rpc::telemetry::SubscribeHomeRequest request;
         auto response_reader = _stub->SubscribeHome(&context, request);
 
-        dronecode_sdk::rpc::telemetry::HomeResponse response;
+        mavsdk::rpc::telemetry::HomeResponse response;
         while (response_reader->Read(&response)) {
             auto home_rpc = response.home();
 
@@ -423,11 +446,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneHome)
 }
 
 void TelemetryServiceImplTest::checkSendsHomePositions(
-    const std::vector<Position> &home_positions) const
+    const std::vector<Position>& home_positions) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::position_callback_t home_callback;
+    mavsdk::Telemetry::position_callback_t home_callback;
     EXPECT_CALL(*_telemetry, home_position_async(_))
         .WillOnce(SaveCallback(&home_callback, &subscription_promise));
 
@@ -469,14 +492,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryInAirAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeInAirAsync(std::vector<bool> &in_air_events) const
+TelemetryServiceImplTest::subscribeInAirAsync(std::vector<bool>& in_air_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeInAirRequest request;
+        mavsdk::rpc::telemetry::SubscribeInAirRequest request;
         auto response_reader = _stub->SubscribeInAir(&context, request);
 
-        dronecode_sdk::rpc::telemetry::InAirResponse response;
+        mavsdk::rpc::telemetry::InAirResponse response;
         while (response_reader->Read(&response)) {
             auto is_in_air = response.is_in_air();
             in_air_events.push_back(is_in_air);
@@ -505,11 +528,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneInAirEvent)
     checkSendsInAirEvents(in_air_events);
 }
 
-void TelemetryServiceImplTest::checkSendsInAirEvents(const std::vector<bool> &in_air_events) const
+void TelemetryServiceImplTest::checkSendsInAirEvents(const std::vector<bool>& in_air_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::in_air_callback_t in_air_callback;
+    mavsdk::Telemetry::in_air_callback_t in_air_callback;
     EXPECT_CALL(*_telemetry, in_air_async(_))
         .WillOnce(SaveCallback(&in_air_callback, &subscription_promise));
 
@@ -551,14 +574,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryArmedAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeArmedAsync(std::vector<bool> &armed_events) const
+TelemetryServiceImplTest::subscribeArmedAsync(std::vector<bool>& armed_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeArmedRequest request;
+        mavsdk::rpc::telemetry::SubscribeArmedRequest request;
         auto response_reader = _stub->SubscribeArmed(&context, request);
 
-        dronecode_sdk::rpc::telemetry::ArmedResponse response;
+        mavsdk::rpc::telemetry::ArmedResponse response;
         while (response_reader->Read(&response)) {
             auto is_armed = response.is_armed();
             armed_events.push_back(is_armed);
@@ -587,11 +610,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneArmedEvent)
     checkSendsArmedEvents(armed_events);
 }
 
-void TelemetryServiceImplTest::checkSendsArmedEvents(const std::vector<bool> &armed_events) const
+void TelemetryServiceImplTest::checkSendsArmedEvents(const std::vector<bool>& armed_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::armed_callback_t armed_callback;
+    mavsdk::Telemetry::armed_callback_t armed_callback;
     EXPECT_CALL(*_telemetry, armed_async(_))
         .WillOnce(SaveCallback(&armed_callback, &subscription_promise));
 
@@ -633,14 +656,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryGpsInfoAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeGpsInfoAsync(std::vector<GpsInfo> &gps_info_events) const
+TelemetryServiceImplTest::subscribeGpsInfoAsync(std::vector<GpsInfo>& gps_info_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeGpsInfoRequest request;
+        mavsdk::rpc::telemetry::SubscribeGpsInfoRequest request;
         auto response_reader = _stub->SubscribeGpsInfo(&context, request);
 
-        dronecode_sdk::rpc::telemetry::GpsInfoResponse response;
+        mavsdk::rpc::telemetry::GpsInfoResponse response;
         while (response_reader->Read(&response)) {
             auto gps_info_rpc = response.gps_info();
 
@@ -696,11 +719,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneGpsInfoEvent)
 }
 
 void TelemetryServiceImplTest::checkSendsGpsInfoEvents(
-    const std::vector<GpsInfo> &gps_info_events) const
+    const std::vector<GpsInfo>& gps_info_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::gps_info_callback_t gps_info_callback;
+    mavsdk::Telemetry::gps_info_callback_t gps_info_callback;
     EXPECT_CALL(*_telemetry, gps_info_async(_))
         .WillOnce(SaveCallback(&gps_info_callback, &subscription_promise));
 
@@ -755,14 +778,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryBatteryAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeBatteryAsync(std::vector<Battery> &battery_events) const
+TelemetryServiceImplTest::subscribeBatteryAsync(std::vector<Battery>& battery_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeBatteryRequest request;
+        mavsdk::rpc::telemetry::SubscribeBatteryRequest request;
         auto response_reader = _stub->SubscribeBattery(&context, request);
 
-        dronecode_sdk::rpc::telemetry::BatteryResponse response;
+        mavsdk::rpc::telemetry::BatteryResponse response;
         while (response_reader->Read(&response)) {
             auto battery_rpc = response.battery();
 
@@ -796,8 +819,8 @@ TEST_F(TelemetryServiceImplTest, sendsOneBatteryEvent)
     checkSendsBatteryEvents(battery_events);
 }
 
-Battery TelemetryServiceImplTest::createBattery(const float voltage_v,
-                                                const float remaining_percent) const
+Battery
+TelemetryServiceImplTest::createBattery(const float voltage_v, const float remaining_percent) const
 {
     Battery battery;
     battery.voltage_v = voltage_v;
@@ -807,11 +830,11 @@ Battery TelemetryServiceImplTest::createBattery(const float voltage_v,
 }
 
 void TelemetryServiceImplTest::checkSendsBatteryEvents(
-    const std::vector<Battery> &battery_events) const
+    const std::vector<Battery>& battery_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::battery_callback_t battery_callback;
+    mavsdk::Telemetry::battery_callback_t battery_callback;
     EXPECT_CALL(*_telemetry, battery_async(_))
         .WillOnce(SaveCallback(&battery_callback, &subscription_promise));
 
@@ -854,14 +877,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryFlightModeAsync)
 }
 
 std::future<void> TelemetryServiceImplTest::subscribeFlightModeAsync(
-    std::vector<FlightMode> &flight_mode_events) const
+    std::vector<FlightMode>& flight_mode_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeFlightModeRequest request;
+        mavsdk::rpc::telemetry::SubscribeFlightModeRequest request;
         auto response_reader = _stub->SubscribeFlightMode(&context, request);
 
-        dronecode_sdk::rpc::telemetry::FlightModeResponse response;
+        mavsdk::rpc::telemetry::FlightModeResponse response;
         while (response_reader->Read(&response)) {
             FlightMode flight_mode = translateRPCFlightMode(response.flight_mode());
             flight_mode_events.push_back(flight_mode);
@@ -917,11 +940,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneFlightModeEvent)
 }
 
 void TelemetryServiceImplTest::checkSendsFlightModeEvents(
-    const std::vector<FlightMode> &flight_mode_events) const
+    const std::vector<FlightMode>& flight_mode_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::flight_mode_callback_t flight_mode_callback;
+    mavsdk::Telemetry::flight_mode_callback_t flight_mode_callback;
     EXPECT_CALL(*_telemetry, flight_mode_async(_))
         .WillOnce(SaveCallback(&flight_mode_callback, &subscription_promise));
 
@@ -967,15 +990,27 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryAttitudeQuaternionAsync)
     quaternion_stream_future.wait();
 }
 
+TEST_F(TelemetryServiceImplTest, registersToTelemetryAttitudeAngularVelocityBodyAsync)
+{
+    EXPECT_CALL(*_telemetry, attitude_angular_velocity_body_async(_)).Times(1);
+
+    std::vector<AngularVelocityBody> angular_velocities_body;
+    auto angular_velocity_body_stream_future =
+        subscribeAttitudeAngularVelocityBodyAsync(angular_velocities_body);
+
+    _telemetry_service->stop();
+    angular_velocity_body_stream_future.wait();
+}
+
 std::future<void> TelemetryServiceImplTest::subscribeAttitudeQuaternionAsync(
-    std::vector<Quaternion> &quaternions) const
+    std::vector<Quaternion>& quaternions) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeAttitudeQuaternionRequest request;
+        mavsdk::rpc::telemetry::SubscribeAttitudeQuaternionRequest request;
         auto response_reader = _stub->SubscribeAttitudeQuaternion(&context, request);
 
-        dronecode_sdk::rpc::telemetry::AttitudeQuaternionResponse response;
+        mavsdk::rpc::telemetry::AttitudeQuaternionResponse response;
         while (response_reader->Read(&response)) {
             auto quaternion_rpc = response.attitude_quaternion();
 
@@ -1003,6 +1038,42 @@ TEST_F(TelemetryServiceImplTest, doesNotSendAttitudeQuaternionIfCallbackNotCalle
     EXPECT_EQ(0, quaternions.size());
 }
 
+std::future<void> TelemetryServiceImplTest::subscribeAttitudeAngularVelocityBodyAsync(
+    std::vector<AngularVelocityBody>& angular_velocities_body) const
+{
+    return std::async(std::launch::async, [&]() {
+        grpc::ClientContext context;
+        mavsdk::rpc::telemetry::SubscribeAttitudeAngularVelocityBodyRequest request;
+        auto response_reader = _stub->SubscribeAttitudeAngularVelocityBody(&context, request);
+
+        mavsdk::rpc::telemetry::AttitudeAngularVelocityBodyResponse response;
+        while (response_reader->Read(&response)) {
+            auto angular_velocity_body_rpc = response.attitude_angular_velocity_body();
+
+            AngularVelocityBody angular_velocity_body;
+            angular_velocity_body.roll_rad_s = angular_velocity_body_rpc.roll_rad_s();
+            angular_velocity_body.pitch_rad_s = angular_velocity_body_rpc.pitch_rad_s();
+            angular_velocity_body.yaw_rad_s = angular_velocity_body_rpc.yaw_rad_s();
+
+            angular_velocities_body.push_back(angular_velocity_body);
+        }
+
+        response_reader->Finish();
+    });
+}
+
+TEST_F(TelemetryServiceImplTest, doesNotSendAttitudeAngularVelocityBodyIfCallbackNotCalled)
+{
+    std::vector<AngularVelocityBody> angular_velocities_body;
+    auto angular_velocity_body_stream_future =
+        subscribeAttitudeAngularVelocityBodyAsync(angular_velocities_body);
+
+    _telemetry_service->stop();
+    angular_velocity_body_stream_future.wait();
+
+    EXPECT_EQ(0, angular_velocities_body.size());
+}
+
 TEST_F(TelemetryServiceImplTest, sendsOneAttitudeQuaternion)
 {
     std::vector<Quaternion> quaternions;
@@ -1011,12 +1082,18 @@ TEST_F(TelemetryServiceImplTest, sendsOneAttitudeQuaternion)
     checkSendsAttitudeQuaternions(quaternions);
 }
 
-Quaternion TelemetryServiceImplTest::createQuaternion(const float w,
-                                                      const float x,
-                                                      const float y,
-                                                      const float z) const
+TEST_F(TelemetryServiceImplTest, sendsOneAttitudeAngularVelocityBody)
 {
-    dronecode_sdk::Telemetry::Quaternion quaternion;
+    std::vector<AngularVelocityBody> angular_velocity_body;
+    angular_velocity_body.push_back(createAngularVelocityBody(0.1f, 0.2f, 0.3f));
+
+    checkSendsAttitudeAngularVelocitiesBody(angular_velocity_body);
+}
+
+Quaternion TelemetryServiceImplTest::createQuaternion(
+    const float w, const float x, const float y, const float z) const
+{
+    mavsdk::Telemetry::Quaternion quaternion;
 
     quaternion.w = w;
     quaternion.x = x;
@@ -1026,12 +1103,24 @@ Quaternion TelemetryServiceImplTest::createQuaternion(const float w,
     return quaternion;
 }
 
+AngularVelocityBody TelemetryServiceImplTest::createAngularVelocityBody(
+    const float roll_rad_s, const float pitch_rad_s, const float yaw_rad_s) const
+{
+    mavsdk::Telemetry::AngularVelocityBody angular_velocity_body;
+
+    angular_velocity_body.roll_rad_s = roll_rad_s;
+    angular_velocity_body.pitch_rad_s = pitch_rad_s;
+    angular_velocity_body.yaw_rad_s = yaw_rad_s;
+
+    return angular_velocity_body;
+}
+
 void TelemetryServiceImplTest::checkSendsAttitudeQuaternions(
-    const std::vector<Quaternion> &quaternions) const
+    const std::vector<Quaternion>& quaternions) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::attitude_quaternion_callback_t attitude_quaternion_callback;
+    mavsdk::Telemetry::attitude_quaternion_callback_t attitude_quaternion_callback;
     EXPECT_CALL(*_telemetry, attitude_quaternion_async(_))
         .WillOnce(SaveCallback(&attitude_quaternion_callback, &subscription_promise));
 
@@ -1050,6 +1139,32 @@ void TelemetryServiceImplTest::checkSendsAttitudeQuaternions(
     }
 }
 
+void TelemetryServiceImplTest::checkSendsAttitudeAngularVelocitiesBody(
+    const std::vector<AngularVelocityBody>& angular_velocities_body) const
+{
+    std::promise<void> subscription_promise;
+    auto subscription_future = subscription_promise.get_future();
+    mavsdk::Telemetry::attitude_angular_velocity_body_callback_t
+        attitude_angular_velocity_body_callback;
+    EXPECT_CALL(*_telemetry, attitude_angular_velocity_body_async(_))
+        .WillOnce(SaveCallback(&attitude_angular_velocity_body_callback, &subscription_promise));
+
+    std::vector<AngularVelocityBody> received_angular_velocities_body;
+    auto angular_velocity_body_stream_future =
+        subscribeAttitudeAngularVelocityBodyAsync(received_angular_velocities_body);
+    subscription_future.wait();
+    for (const auto angular_velocity_body : angular_velocities_body) {
+        attitude_angular_velocity_body_callback(angular_velocity_body);
+    }
+    _telemetry_service->stop();
+    angular_velocity_body_stream_future.wait();
+
+    ASSERT_EQ(angular_velocities_body.size(), received_angular_velocities_body.size());
+    for (size_t i = 0; i < angular_velocities_body.size(); i++) {
+        EXPECT_EQ(angular_velocities_body.at(i), received_angular_velocities_body.at(i));
+    }
+}
+
 TEST_F(TelemetryServiceImplTest, sendsMultipleAttitudeQuaternions)
 {
     std::vector<Quaternion> quaternions;
@@ -1058,6 +1173,16 @@ TEST_F(TelemetryServiceImplTest, sendsMultipleAttitudeQuaternions)
     quaternions.push_back(createQuaternion(5.2f, 5.9f, 1.1f, 0.8f));
 
     checkSendsAttitudeQuaternions(quaternions);
+}
+
+TEST_F(TelemetryServiceImplTest, sendsMultipleAttitudeAngularVelocityBodys)
+{
+    std::vector<AngularVelocityBody> angular_velocities_body;
+    angular_velocities_body.push_back(createAngularVelocityBody(0.1f, 0.2f, 0.3f));
+    angular_velocities_body.push_back(createAngularVelocityBody(2.1f, 0.4f, -2.2f));
+    angular_velocities_body.push_back(createAngularVelocityBody(5.2f, 5.9f, 1.1f));
+
+    checkSendsAttitudeAngularVelocitiesBody(angular_velocities_body);
 }
 
 TEST_F(TelemetryServiceImplTest, registersToTelemetryAttitudeEulerAsync)
@@ -1072,14 +1197,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryAttitudeEulerAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeAttitudeEulerAsync(std::vector<EulerAngle> &euler_angles) const
+TelemetryServiceImplTest::subscribeAttitudeEulerAsync(std::vector<EulerAngle>& euler_angles) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeAttitudeEulerRequest request;
+        mavsdk::rpc::telemetry::SubscribeAttitudeEulerRequest request;
         auto response_reader = _stub->SubscribeAttitudeEuler(&context, request);
 
-        dronecode_sdk::rpc::telemetry::AttitudeEulerResponse response;
+        mavsdk::rpc::telemetry::AttitudeEulerResponse response;
         while (response_reader->Read(&response)) {
             auto euler_angle_rpc = response.attitude_euler();
 
@@ -1114,9 +1239,8 @@ TEST_F(TelemetryServiceImplTest, sendsOneAttitudeEuler)
     checkSendsAttitudeEulerAngles(euler_angles);
 }
 
-EulerAngle TelemetryServiceImplTest::createEulerAngle(const float roll_deg,
-                                                      const float pitch_deg,
-                                                      const float yaw_deg) const
+EulerAngle TelemetryServiceImplTest::createEulerAngle(
+    const float roll_deg, const float pitch_deg, const float yaw_deg) const
 {
     EulerAngle euler_angle;
     euler_angle.roll_deg = roll_deg;
@@ -1127,11 +1251,11 @@ EulerAngle TelemetryServiceImplTest::createEulerAngle(const float roll_deg,
 }
 
 void TelemetryServiceImplTest::checkSendsAttitudeEulerAngles(
-    const std::vector<EulerAngle> &euler_angles) const
+    const std::vector<EulerAngle>& euler_angles) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::attitude_euler_angle_callback_t attitude_euler_angle_callback;
+    mavsdk::Telemetry::attitude_euler_angle_callback_t attitude_euler_angle_callback;
     EXPECT_CALL(*_telemetry, attitude_euler_angle_async(_))
         .WillOnce(SaveCallback(&attitude_euler_angle_callback, &subscription_promise));
 
@@ -1172,14 +1296,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryCameraAttitudeQuaternionAsy
 }
 
 std::future<void> TelemetryServiceImplTest::subscribeCameraAttitudeQuaternionAsync(
-    std::vector<Quaternion> &quaternions) const
+    std::vector<Quaternion>& quaternions) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeCameraAttitudeQuaternionRequest request;
+        mavsdk::rpc::telemetry::SubscribeCameraAttitudeQuaternionRequest request;
         auto response_reader = _stub->SubscribeCameraAttitudeQuaternion(&context, request);
 
-        dronecode_sdk::rpc::telemetry::CameraAttitudeQuaternionResponse response;
+        mavsdk::rpc::telemetry::CameraAttitudeQuaternionResponse response;
         while (response_reader->Read(&response)) {
             auto quaternion_rpc = response.attitude_quaternion();
 
@@ -1216,11 +1340,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneCameraAttitudeQuaternion)
 }
 
 void TelemetryServiceImplTest::checkSendsCameraAttitudeQuaternions(
-    const std::vector<Quaternion> &quaternions) const
+    const std::vector<Quaternion>& quaternions) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::attitude_quaternion_callback_t attitude_quaternion_callback;
+    mavsdk::Telemetry::attitude_quaternion_callback_t attitude_quaternion_callback;
     EXPECT_CALL(*_telemetry, camera_attitude_quaternion_async(_))
         .WillOnce(SaveCallback(&attitude_quaternion_callback, &subscription_promise));
 
@@ -1261,14 +1385,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryCameraAttitudeEulerAsync)
 }
 
 std::future<void> TelemetryServiceImplTest::subscribeCameraAttitudeEulerAsync(
-    std::vector<EulerAngle> &euler_angles) const
+    std::vector<EulerAngle>& euler_angles) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeCameraAttitudeEulerRequest request;
+        mavsdk::rpc::telemetry::SubscribeCameraAttitudeEulerRequest request;
         auto response_reader = _stub->SubscribeCameraAttitudeEuler(&context, request);
 
-        dronecode_sdk::rpc::telemetry::CameraAttitudeEulerResponse response;
+        mavsdk::rpc::telemetry::CameraAttitudeEulerResponse response;
         while (response_reader->Read(&response)) {
             auto euler_angle_rpc = response.attitude_euler();
 
@@ -1304,11 +1428,11 @@ TEST_F(TelemetryServiceImplTest, sendsOneCameraAttitudeEuler)
 }
 
 void TelemetryServiceImplTest::checkSendsCameraAttitudeEulerAngles(
-    const std::vector<EulerAngle> &euler_angles) const
+    const std::vector<EulerAngle>& euler_angles) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::attitude_euler_angle_callback_t attitude_euler_angle_callback;
+    mavsdk::Telemetry::attitude_euler_angle_callback_t attitude_euler_angle_callback;
     EXPECT_CALL(*_telemetry, camera_attitude_euler_angle_async(_))
         .WillOnce(SaveCallback(&attitude_euler_angle_callback, &subscription_promise));
 
@@ -1349,14 +1473,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryGroundSpeedNedAsync)
 }
 
 std::future<void> TelemetryServiceImplTest::subscribeGroundSpeedNedAsync(
-    std::vector<GroundSpeedNed> &ground_speed_events) const
+    std::vector<GroundSpeedNed>& ground_speed_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeGroundSpeedNedRequest request;
+        mavsdk::rpc::telemetry::SubscribeGroundSpeedNedRequest request;
         auto response_reader = _stub->SubscribeGroundSpeedNed(&context, request);
 
-        dronecode_sdk::rpc::telemetry::GroundSpeedNedResponse response;
+        mavsdk::rpc::telemetry::GroundSpeedNedResponse response;
         while (response_reader->Read(&response)) {
             auto ground_speed_rpc = response.ground_speed_ned();
 
@@ -1391,9 +1515,8 @@ TEST_F(TelemetryServiceImplTest, sendsOneGroundSpeedEvent)
     checkSendsGroundSpeedEvents(ground_speed_events);
 }
 
-GroundSpeedNed TelemetryServiceImplTest::createGroundSpeedNed(const float vel_north,
-                                                              const float vel_east,
-                                                              const float vel_down) const
+GroundSpeedNed TelemetryServiceImplTest::createGroundSpeedNed(
+    const float vel_north, const float vel_east, const float vel_down) const
 {
     GroundSpeedNed ground_speed;
 
@@ -1405,11 +1528,11 @@ GroundSpeedNed TelemetryServiceImplTest::createGroundSpeedNed(const float vel_no
 }
 
 void TelemetryServiceImplTest::checkSendsGroundSpeedEvents(
-    const std::vector<GroundSpeedNed> &ground_speed_events) const
+    const std::vector<GroundSpeedNed>& ground_speed_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::ground_speed_ned_callback_t ground_speed_ned_callback;
+    mavsdk::Telemetry::ground_speed_ned_callback_t ground_speed_ned_callback;
     EXPECT_CALL(*_telemetry, ground_speed_ned_async(_))
         .WillOnce(SaveCallback(&ground_speed_ned_callback, &subscription_promise));
 
@@ -1450,14 +1573,14 @@ TEST_F(TelemetryServiceImplTest, registersToTelemetryRcStatusAsync)
 }
 
 std::future<void>
-TelemetryServiceImplTest::subscribeRcStatusAsync(std::vector<RcStatus> &rc_status_events) const
+TelemetryServiceImplTest::subscribeRcStatusAsync(std::vector<RcStatus>& rc_status_events) const
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::telemetry::SubscribeRcStatusRequest request;
+        mavsdk::rpc::telemetry::SubscribeRcStatusRequest request;
         auto response_reader = _stub->SubscribeRcStatus(&context, request);
 
-        dronecode_sdk::rpc::telemetry::RcStatusResponse response;
+        mavsdk::rpc::telemetry::RcStatusResponse response;
         while (response_reader->Read(&response)) {
             auto rc_status_rpc = response.rc_status();
 
@@ -1492,9 +1615,10 @@ TEST_F(TelemetryServiceImplTest, sendsOneRcStatusEvent)
     checkSendsRcStatusEvents(rc_status_events);
 }
 
-RcStatus TelemetryServiceImplTest::createRcStatus(const bool was_available_once,
-                                                  const bool is_available,
-                                                  const float signal_strength_percent) const
+RcStatus TelemetryServiceImplTest::createRcStatus(
+    const bool was_available_once,
+    const bool is_available,
+    const float signal_strength_percent) const
 {
     RcStatus rc_status;
 
@@ -1506,11 +1630,11 @@ RcStatus TelemetryServiceImplTest::createRcStatus(const bool was_available_once,
 }
 
 void TelemetryServiceImplTest::checkSendsRcStatusEvents(
-    const std::vector<RcStatus> &rc_status_events) const
+    const std::vector<RcStatus>& rc_status_events) const
 {
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::Telemetry::rc_status_callback_t rc_status_callback;
+    mavsdk::Telemetry::rc_status_callback_t rc_status_callback;
     EXPECT_CALL(*_telemetry, rc_status_async(_))
         .WillOnce(SaveCallback(&rc_status_callback, &subscription_promise));
 
@@ -1529,6 +1653,58 @@ void TelemetryServiceImplTest::checkSendsRcStatusEvents(
     }
 }
 
+std::future<void> TelemetryServiceImplTest::subscribeActuatorControlTargetAsync(
+    std::vector<ActuatorControlTarget>& actuator_control_target_events) const
+{
+    return std::async(std::launch::async, [&]() {
+        grpc::ClientContext context;
+        mavsdk::rpc::telemetry::SubscribeActuatorControlTargetRequest request;
+        auto response_reader = _stub->SubscribeActuatorControlTarget(&context, request);
+
+        mavsdk::rpc::telemetry::ActuatorControlTargetResponse response;
+        while (response_reader->Read(&response)) {
+            auto actuator_control_target_rpc = response.actuator_control_target();
+
+            ActuatorControlTarget actuator_control_target{};
+            actuator_control_target.group = actuator_control_target_rpc.group();
+            int num_controls = std::min(8, actuator_control_target_rpc.controls_size());
+            for (int i = 0; i < num_controls; i++) {
+                actuator_control_target.controls[i] = actuator_control_target_rpc.controls(i);
+            }
+
+            actuator_control_target_events.push_back(actuator_control_target);
+        }
+
+        response_reader->Finish();
+    });
+}
+
+std::future<void> TelemetryServiceImplTest::subscribeActuatorOutputStatusAsync(
+    std::vector<ActuatorOutputStatus>& actuator_output_status_events) const
+{
+    return std::async(std::launch::async, [&]() {
+        grpc::ClientContext context;
+        mavsdk::rpc::telemetry::SubscribeActuatorOutputStatusRequest request;
+        auto response_reader = _stub->SubscribeActuatorOutputStatus(&context, request);
+
+        mavsdk::rpc::telemetry::ActuatorOutputStatusResponse response;
+        while (response_reader->Read(&response)) {
+            auto actuator_output_status_rpc = response.actuator_output_status();
+
+            ActuatorOutputStatus actuator_output_status{};
+            actuator_output_status.active = actuator_output_status_rpc.active();
+            int num_actuators = std::min(32, actuator_output_status_rpc.actuator_size());
+            for (int i = 0; i < num_actuators; i++) {
+                actuator_output_status.actuator[i] = actuator_output_status_rpc.actuator(i);
+            }
+
+            actuator_output_status_events.push_back(actuator_output_status);
+        }
+
+        response_reader->Finish();
+    });
+}
+
 TEST_F(TelemetryServiceImplTest, sendsMultipleRcStatusEvents)
 {
     std::vector<RcStatus> rc_status_events;
@@ -1537,6 +1713,114 @@ TEST_F(TelemetryServiceImplTest, sendsMultipleRcStatusEvents)
     rc_status_events.push_back(createRcStatus(true, true, 89.12f));
 
     checkSendsRcStatusEvents(rc_status_events);
+}
+
+ActuatorControlTarget TelemetryServiceImplTest::createActuatorControlTarget(
+    const uint8_t group, const std::vector<float>& controls) const
+{
+    ActuatorControlTarget actuator_control_target{};
+
+    actuator_control_target.group = group;
+    int controls_len = std::min<size_t>(8, controls.size());
+    std::copy_n(controls.begin(), controls_len, actuator_control_target.controls);
+
+    return actuator_control_target;
+}
+
+ActuatorOutputStatus
+TelemetryServiceImplTest::createActuatorOutputStatus(const std::vector<float>& actuators) const
+{
+    ActuatorOutputStatus actuator_output_status;
+
+    actuator_output_status.active = std::min<size_t>(32, actuators.size());
+    std::copy_n(actuators.begin(), actuator_output_status.active, actuator_output_status.actuator);
+
+    return actuator_output_status;
+}
+
+void TelemetryServiceImplTest::checkSendsActuatorControlTargetEvents(
+    const std::vector<ActuatorControlTarget>& actuator_control_target_events) const
+{
+    std::promise<void> subscription_promise;
+    auto subscription_future = subscription_promise.get_future();
+    mavsdk::Telemetry::actuator_control_target_callback_t actuator_control_target_callback;
+    EXPECT_CALL(*_telemetry, actuator_control_target_async(_))
+        .WillOnce(SaveCallback(&actuator_control_target_callback, &subscription_promise));
+
+    std::vector<ActuatorControlTarget> received_actuator_control_target_events;
+    auto actuator_control_target_stream_future =
+        subscribeActuatorControlTargetAsync(received_actuator_control_target_events);
+    subscription_future.wait();
+    for (const auto actuator_control_target : actuator_control_target_events) {
+        actuator_control_target_callback(actuator_control_target);
+    }
+    _telemetry_service->stop();
+    actuator_control_target_stream_future.wait();
+
+    ASSERT_EQ(
+        actuator_control_target_events.size(), received_actuator_control_target_events.size());
+    for (size_t i = 0; i < actuator_control_target_events.size(); i++) {
+        EXPECT_EQ(
+            actuator_control_target_events.at(i), received_actuator_control_target_events.at(i));
+    }
+}
+
+void TelemetryServiceImplTest::checkSendsActuatorOutputStatusEvents(
+    const std::vector<ActuatorOutputStatus>& actuator_output_status_events) const
+{
+    std::promise<void> subscription_promise;
+    auto subscription_future = subscription_promise.get_future();
+    mavsdk::Telemetry::actuator_output_status_callback_t actuator_output_status_callback;
+    EXPECT_CALL(*_telemetry, actuator_output_status_async(_))
+        .WillOnce(SaveCallback(&actuator_output_status_callback, &subscription_promise));
+
+    std::vector<ActuatorOutputStatus> received_actuator_output_status_events;
+    auto actuator_output_status_stream_future =
+        subscribeActuatorOutputStatusAsync(received_actuator_output_status_events);
+    subscription_future.wait();
+    for (const auto actuator_output_status : actuator_output_status_events) {
+        actuator_output_status_callback(actuator_output_status);
+    }
+    _telemetry_service->stop();
+    actuator_output_status_stream_future.wait();
+
+    ASSERT_EQ(actuator_output_status_events.size(), received_actuator_output_status_events.size());
+    for (size_t i = 0; i < actuator_output_status_events.size(); i++) {
+        EXPECT_EQ(
+            actuator_output_status_events.at(i), received_actuator_output_status_events.at(i));
+    }
+}
+
+TEST_F(TelemetryServiceImplTest, sendsMultipleActuatorControlTargetEvents)
+{
+    std::vector<ActuatorControlTarget> actuator_control_target_events;
+    std::vector<float> controls{0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f};
+    actuator_control_target_events.push_back(createActuatorControlTarget(0, controls));
+    actuator_control_target_events.push_back(createActuatorControlTarget(1, controls));
+    actuator_control_target_events.push_back(createActuatorControlTarget(2, controls));
+    actuator_control_target_events.push_back(createActuatorControlTarget(3, controls));
+
+    checkSendsActuatorControlTargetEvents(actuator_control_target_events);
+}
+
+TEST_F(TelemetryServiceImplTest, sendsMultipleActuatorOutputStatusEvents)
+{
+    std::vector<ActuatorOutputStatus> actuator_output_status_events;
+
+    std::vector<float> actuators;
+    for (int i = 0; i < 32; i++) {
+        actuators.push_back(i * 2.0f);
+    };
+
+    actuator_output_status_events.push_back(createActuatorOutputStatus(actuators));
+    actuators.resize(27);
+    actuator_output_status_events.push_back(createActuatorOutputStatus(actuators));
+    actuators.resize(16);
+    actuator_output_status_events.push_back(createActuatorOutputStatus(actuators));
+    actuators.resize(5);
+    actuator_output_status_events.push_back(createActuatorOutputStatus(actuators));
+
+    checkSendsActuatorOutputStatusEvents(actuator_output_status_events);
 }
 
 } // namespace

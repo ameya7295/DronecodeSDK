@@ -1,28 +1,28 @@
 #include "plugins/param/param.h"
 #include "param_impl.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-Param::Param(System &system) : PluginBase(), _impl{new ParamImpl(system)} {}
+Param::Param(System& system) : PluginBase(), _impl{new ParamImpl(system)} {}
 
 Param::~Param() {}
 
-std::pair<Param::Result, int32_t> Param::get_param_int(const std::string &name)
+std::pair<Param::Result, int32_t> Param::get_param_int(const std::string& name)
 {
     return _impl->get_param_int(name);
 }
 
-Param::Result Param::set_param_int(const std::string &name, int32_t value)
+Param::Result Param::set_param_int(const std::string& name, int32_t value)
 {
     return _impl->set_param_int(name, value);
 }
 
-std::pair<Param::Result, float> Param::get_param_float(const std::string &name)
+std::pair<Param::Result, float> Param::get_param_float(const std::string& name)
 {
     return _impl->get_param_float(name);
 }
 
-Param::Result Param::set_param_float(const std::string &name, float value)
+Param::Result Param::set_param_float(const std::string& name, float value)
 {
     return _impl->set_param_float(name, value);
 }
@@ -47,4 +47,4 @@ std::string Param::result_str(Result result)
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

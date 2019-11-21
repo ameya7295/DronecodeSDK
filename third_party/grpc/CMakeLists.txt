@@ -4,11 +4,9 @@ project(external-grpc)
 include(ExternalProject)
 
 list(APPEND CMAKE_ARGS
+    "${CL_ARGS}"
     "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
-    "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
-    "-DCMAKE_TOOLCHAIN_FILE:PATH=${CMAKE_TOOLCHAIN_FILE}"
-    "-DZLIB_ROOT=${CMAKE_INSTALL_PREFIX}"
-    "-DOPENSSL_ROOT_DIR=${CMAKE_INSTALL_PREFIX}"
+    "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}"
     "-DRUN_HAVE_STD_REGEX=0"
     "-DRUN_HAVE_POSIX_REGEX=0"
     "-DRUN_HAVE_STEADY_CLOCK=0"
@@ -23,16 +21,15 @@ list(APPEND CMAKE_ARGS
     "-DgRPC_BUILD_CSHARP_EXT=OFF"
     )
 
-if(ANDROID)
+if(CMAKE_CROSSCOMPILING)
     list(APPEND CMAKE_ARGS
-        "-DANDROID_ABI:STRING=${ANDROID_ABI}"
-        "-DANDROID_STL:STRING=${ANDROID_STL}"
-        "-DANDROID_PLATFORM=${ANDROID_PLATFORM}"
-        )
-elseif(IOS)
-    list(APPEND CMAKE_ARGS
-        "-DPLATFORM=${PLATFORM}"
         "-DgRPC_BUILD_CODEGEN=OFF"
+        )
+endif()
+
+if(MANYLINUX1)
+    list(APPEND CMAKE_ARGS
+        "-DCMAKE_CXX_FLAGS=-DGPR_MANYLINUX1=1"
         )
 endif()
 
@@ -43,8 +40,8 @@ endforeach()
 
 ExternalProject_add(
     grpc
-    #URL https://github.com/dronecore/grpc/archive/fix-pointer-not-aligned-ios.zip
-    URL https://github.com/dronecore/grpc/archive/add-build-tools-option.zip
+    GIT_REPOSITORY https://github.com/grpc/grpc
+    GIT_TAG v1.24.0
     PREFIX grpc
     CMAKE_ARGS "${CMAKE_ARGS}"
     )

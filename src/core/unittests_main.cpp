@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     ::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();

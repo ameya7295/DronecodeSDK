@@ -1,6 +1,6 @@
 #include "system.h"
 #include "global_include.h"
-#include "dronecode_sdk_impl.h"
+#include "mavsdk_impl.h"
 #include "mavlink_include.h"
 #include "system_impl.h"
 #include "plugin_impl_base.h"
@@ -11,12 +11,12 @@
 // Set to 1 to log incoming/outgoing mavlink messages.
 #define MESSAGE_DEBUGGING 0
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 using namespace std::placeholders; // for `_1`
 
-System::System(DronecodeSDKImpl &parent, uint8_t system_id, uint8_t component_id) :
-    _system_impl(std::make_shared<SystemImpl>(parent, system_id, component_id))
+System::System(MavsdkImpl& parent, uint8_t system_id, uint8_t component_id, bool connected) :
+    _system_impl(std::make_shared<SystemImpl>(parent, system_id, component_id, connected))
 {}
 
 System::~System() {}
@@ -57,4 +57,4 @@ void System::register_component_discovered_callback(discover_callback_t callback
     return _system_impl->register_component_discovered_callback(callback);
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

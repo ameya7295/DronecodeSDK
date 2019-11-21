@@ -1,14 +1,14 @@
 #include <iostream>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST(SitlTestMultiple, SystemConnectionMultiple)
 {
-    dronecode_sdk::DronecodeSDK *dc;
-    dc = new dronecode_sdk::DronecodeSDK();
+    mavsdk::Mavsdk* dc;
+    dc = new mavsdk::Mavsdk();
     std::cout << "started" << std::endl;
 
     ASSERT_EQ(dc->add_udp_connection(14540), ConnectionResult::SUCCESS);
@@ -31,7 +31,7 @@ TEST(SitlTestMultiple, SystemConnectionMultiple)
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    dc = new dronecode_sdk::DronecodeSDK();
+    dc = new mavsdk::Mavsdk();
 
     ASSERT_EQ(dc->add_udp_connection(14540), ConnectionResult::SUCCESS);
 

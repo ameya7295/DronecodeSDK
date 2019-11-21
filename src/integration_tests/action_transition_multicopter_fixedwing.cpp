@@ -1,12 +1,12 @@
 #include <iostream>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/action/action.h"
 #include "plugins/telemetry/telemetry.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
-// static void connect(DronecodeSDK);
+// static void connect(Mavsdk);
 static void takeoff(std::shared_ptr<Action> action, std::shared_ptr<Telemetry> telemetry);
 static void takeoff_and_transition_to_fixedwing();
 static void land_and_disarm(std::shared_ptr<Action> action, std::shared_ptr<Telemetry> telemetry);
@@ -19,17 +19,17 @@ TEST_F(SitlTest, ActionTransitionSync_standard_vtol)
 void takeoff_and_transition_to_fixedwing()
 {
     // Init & connect
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
-    ASSERT_TRUE(poll_condition_with_timeout([&dc]() { return dc.is_connected(); },
-                                            std::chrono::seconds(10)));
+    ASSERT_TRUE(poll_condition_with_timeout(
+        [&dc]() { return dc.is_connected(); }, std::chrono::seconds(10)));
     ASSERT_TRUE(dc.is_connected());
 
-    System &system = dc.system();
+    System& system = dc.system();
     auto action = std::make_shared<Action>(system);
     auto telemetry = std::make_shared<Telemetry>(system);
 

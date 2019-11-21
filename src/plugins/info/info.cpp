@@ -1,9 +1,9 @@
 #include "plugins/info/info.h"
 #include "info_impl.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-Info::Info(System &system) : PluginBase(), _impl{new InfoImpl(system)} {}
+Info::Info(System& system) : PluginBase(), _impl{new InfoImpl(system)} {}
 
 Info::~Info() {}
 
@@ -36,4 +36,4 @@ std::string Info::result_str(Result result)
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

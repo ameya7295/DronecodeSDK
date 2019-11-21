@@ -4,33 +4,31 @@
 #include <iostream>
 #include <memory>
 
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "integration_test_helper.h"
 #include "plugins/action/action.h"
 #include "plugins/gimbal/gimbal.h"
 #include "plugins/offboard/offboard.h"
 #include "plugins/telemetry/telemetry.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 void send_new_gimbal_command(std::shared_ptr<Gimbal> gimbal, int i);
-void send_gimbal_roi_location(std::shared_ptr<Gimbal> gimbal,
-                              double latitude_deg,
-                              double longitude_deg,
-                              float altitude_m);
+void send_gimbal_roi_location(
+    std::shared_ptr<Gimbal> gimbal, double latitude_deg, double longitude_deg, float altitude_m);
 void receive_gimbal_result(Gimbal::Result result);
 void receive_gimbal_attitude_euler_angles(Telemetry::EulerAngle euler_angle);
 
 TEST(SitlTestGimbal, GimbalMove)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     // FIXME: This is what it should be, for now though with the typhoon_h480
     //        SITL simulation, the gimbal is hooked up to the autopilot.
     // ASSERT_TRUE(system.has_gimbal());
@@ -51,14 +49,14 @@ TEST(SitlTestGimbal, GimbalMove)
 
 TEST(SitlTestGimbal, GimbalTakeoffAndMove)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     // ASSERT_TRUE(system.has_gimbal());
     ASSERT_TRUE(system.has_autopilot());
 
@@ -92,14 +90,14 @@ TEST(SitlTestGimbal, GimbalTakeoffAndMove)
 
 TEST(SitlTestGimbal, GimbalROIOffboard)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     // ASSERT_TRUE(system.has_gimbal());
     ASSERT_TRUE(system.has_autopilot());
 
@@ -113,14 +111,15 @@ TEST(SitlTestGimbal, GimbalROIOffboard)
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    const Telemetry::Position &position = telemetry->position();
+    const Telemetry::Position& position = telemetry->position();
 
     // set the ROI location: a bit to the north of the vehicle's location
     const double latitude_offset_deg = 3. / 111111.; // this is about 3 m
-    send_gimbal_roi_location(gimbal,
-                             position.latitude_deg + latitude_offset_deg,
-                             position.longitude_deg,
-                             position.absolute_altitude_m + 1.f);
+    send_gimbal_roi_location(
+        gimbal,
+        position.latitude_deg + latitude_offset_deg,
+        position.longitude_deg,
+        position.absolute_altitude_m + 1.f);
 
     Action::Result action_result = action->arm();
     EXPECT_EQ(action_result, Action::Result::SUCCESS);
@@ -177,10 +176,13 @@ void send_new_gimbal_command(std::shared_ptr<Gimbal> gimbal, int i)
     gimbal->set_pitch_and_yaw_async(pitch_deg, yaw_deg, &receive_gimbal_result);
 }
 
-void send_gimbal_roi_location(std::shared_ptr<Gimbal> gimbal,
-                              double latitude_deg,
-                              double longitude_deg,
-                              float altitude_m)
+void send_gimbal_mode_command(std::shared_ptr<Gimbal> gimbal, const Gimbal::GimbalMode gimbal_mode)
+{
+    gimbal->set_gimbal_mode_async(gimbal_mode, &receive_gimbal_result);
+}
+
+void send_gimbal_roi_location(
+    std::shared_ptr<Gimbal> gimbal, double latitude_deg, double longitude_deg, float altitude_m)
 {
     gimbal->set_roi_location_async(latitude_deg, longitude_deg, altitude_m, &receive_gimbal_result);
 }

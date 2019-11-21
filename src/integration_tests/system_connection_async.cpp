@@ -1,9 +1,9 @@
 #include <iostream>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for _1
 
 // For now we don't test the timing out because the starting and stopping of
@@ -19,7 +19,7 @@ void on_timeout(uint64_t uuid);
 
 TEST_F(SitlTest, SystemConnectionAsync)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ASSERT_EQ(dc.add_udp_connection(), ConnectionResult::SUCCESS);
 

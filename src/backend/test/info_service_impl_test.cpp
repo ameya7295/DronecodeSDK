@@ -12,11 +12,11 @@ using testing::_;
 using testing::NiceMock;
 using testing::Return;
 
-using MockInfo = NiceMock<dronecode_sdk::testing::MockInfo>;
-using InfoServiceImpl = dronecode_sdk::backend::InfoServiceImpl<MockInfo>;
+using MockInfo = NiceMock<mavsdk::testing::MockInfo>;
+using InfoServiceImpl = mavsdk::backend::InfoServiceImpl<MockInfo>;
 
-using InfoResult = dronecode_sdk::rpc::info::InfoResult;
-using InputPair = std::pair<std::string, dronecode_sdk::Info::Result>;
+using InfoResult = mavsdk::rpc::info::InfoResult;
+using InputPair = std::pair<std::string, mavsdk::Info::Result>;
 
 static constexpr int ARBITRARY_SW_VERSION_MAJOR = 1;
 static constexpr int ARBITRARY_SW_VERSION_MINOR = 2;
@@ -39,7 +39,7 @@ TEST_F(InfoServiceImplTest, getVersionCallsGetter)
     MockInfo info;
     InfoServiceImpl infoService(info);
     EXPECT_CALL(info, get_version()).Times(1);
-    dronecode_sdk::rpc::info::GetVersionResponse response;
+    mavsdk::rpc::info::GetVersionResponse response;
 
     infoService.GetVersion(nullptr, nullptr, &response);
 }
@@ -49,7 +49,7 @@ TEST_P(InfoServiceImplTest, getsCorrectVersion)
     MockInfo info;
     InfoServiceImpl infoService(info);
 
-    dronecode_sdk::Info::Version arbitrary_version;
+    mavsdk::Info::Version arbitrary_version;
 
     arbitrary_version.flight_sw_major = ARBITRARY_SW_VERSION_MAJOR;
     arbitrary_version.flight_sw_minor = ARBITRARY_SW_VERSION_MINOR;
@@ -63,7 +63,7 @@ TEST_P(InfoServiceImplTest, getsCorrectVersion)
 
     const auto expected_pair = std::make_pair<>(GetParam().second, arbitrary_version);
     ON_CALL(info, get_version()).WillByDefault(Return(expected_pair));
-    dronecode_sdk::rpc::info::GetVersionResponse response;
+    mavsdk::rpc::info::GetVersionResponse response;
 
     infoService.GetVersion(nullptr, nullptr, &response);
 
@@ -71,12 +71,12 @@ TEST_P(InfoServiceImplTest, getsCorrectVersion)
     EXPECT_EQ(expected_pair.second.flight_sw_major, response.version().flight_sw_major());
     EXPECT_EQ(expected_pair.second.flight_sw_minor, response.version().flight_sw_minor());
     EXPECT_EQ(expected_pair.second.flight_sw_patch, response.version().flight_sw_patch());
-    EXPECT_EQ(expected_pair.second.flight_sw_vendor_major,
-              response.version().flight_sw_vendor_major());
-    EXPECT_EQ(expected_pair.second.flight_sw_vendor_minor,
-              response.version().flight_sw_vendor_minor());
-    EXPECT_EQ(expected_pair.second.flight_sw_vendor_patch,
-              response.version().flight_sw_vendor_patch());
+    EXPECT_EQ(
+        expected_pair.second.flight_sw_vendor_major, response.version().flight_sw_vendor_major());
+    EXPECT_EQ(
+        expected_pair.second.flight_sw_vendor_minor, response.version().flight_sw_vendor_minor());
+    EXPECT_EQ(
+        expected_pair.second.flight_sw_vendor_patch, response.version().flight_sw_vendor_patch());
     EXPECT_EQ(expected_pair.second.os_sw_major, response.version().os_sw_major());
     EXPECT_EQ(expected_pair.second.os_sw_minor, response.version().os_sw_minor());
     EXPECT_EQ(expected_pair.second.os_sw_patch, response.version().os_sw_patch());
@@ -90,17 +90,16 @@ TEST_F(InfoServiceImplTest, getVersionDoesNotCrashWithNullResponse)
     infoService.GetVersion(nullptr, nullptr, nullptr);
 }
 
-INSTANTIATE_TEST_CASE_P(InfoResultCorrespondences,
-                        InfoServiceImplTest,
-                        ::testing::ValuesIn(generateInputPairs()));
+INSTANTIATE_TEST_CASE_P(
+    InfoResultCorrespondences, InfoServiceImplTest, ::testing::ValuesIn(generateInputPairs()));
 
 std::vector<InputPair> generateInputPairs()
 {
     std::vector<InputPair> input_pairs;
-    input_pairs.push_back(std::make_pair("SUCCESS", dronecode_sdk::Info::Result::SUCCESS));
+    input_pairs.push_back(std::make_pair("SUCCESS", mavsdk::Info::Result::SUCCESS));
     input_pairs.push_back(std::make_pair(
-        "INFORMATION_NOT_RECEIVED_YET", dronecode_sdk::Info::Result::INFORMATION_NOT_RECEIVED_YET));
-    input_pairs.push_back(std::make_pair("UNKNOWN", dronecode_sdk::Info::Result::UNKNOWN));
+        "INFORMATION_NOT_RECEIVED_YET", mavsdk::Info::Result::INFORMATION_NOT_RECEIVED_YET));
+    input_pairs.push_back(std::make_pair("UNKNOWN", mavsdk::Info::Result::UNKNOWN));
 
     return input_pairs;
 }

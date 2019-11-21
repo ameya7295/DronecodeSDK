@@ -7,18 +7,18 @@
 #include <vector>
 
 #include "core/core_service_impl.h"
-#include "core/mocks/dronecode_sdk_mock.h"
+#include "core/mocks/mavsdk_mock.h"
 
 namespace {
 
 using testing::_;
 using testing::NiceMock;
 
-using MockDronecodeSDK = NiceMock<dronecode_sdk::testing::MockDronecodeSDK>;
-using CoreServiceImpl = dronecode_sdk::backend::CoreServiceImpl<MockDronecodeSDK>;
-using CoreService = dronecode_sdk::rpc::core::CoreService;
+using MockMavsdk = NiceMock<mavsdk::testing::MockMavsdk>;
+using CoreServiceImpl = mavsdk::backend::CoreServiceImpl<MockMavsdk>;
+using CoreService = mavsdk::rpc::core::CoreService;
 
-using ConnectionStateResponse = dronecode_sdk::rpc::core::ConnectionStateResponse;
+using ConnectionStateResponse = mavsdk::rpc::core::ConnectionStateResponse;
 
 static constexpr auto DEFAULT_BACKEND_PORT = 50051;
 static constexpr auto DEFAULT_BACKEND_ADDRESS = "localhost";
@@ -27,7 +27,7 @@ class CoreServiceImplTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        _dc = std::unique_ptr<MockDronecodeSDK>(new MockDronecodeSDK());
+        _dc = std::unique_ptr<MockMavsdk>(new MockMavsdk());
         _core_service = std::unique_ptr<CoreServiceImpl>(new CoreServiceImpl(*_dc));
 
         grpc::ServerBuilder builder;
@@ -42,10 +42,10 @@ protected:
     virtual void TearDown() { _server->Shutdown(); }
 
     void checkPluginIsRunning(const std::string plugin_name);
-    std::future<void> subscribeConnectionStateAsync(std::vector<std::pair<uint64_t, bool>> &events);
+    std::future<void> subscribeConnectionStateAsync(std::vector<std::pair<uint64_t, bool>>& events);
 
     std::unique_ptr<CoreServiceImpl> _core_service{};
-    std::unique_ptr<MockDronecodeSDK> _dc{};
+    std::unique_ptr<MockMavsdk> _dc{};
     std::unique_ptr<grpc::Server> _server{};
     std::unique_ptr<CoreService::Stub> _stub{};
 };
@@ -63,7 +63,7 @@ TEST_F(CoreServiceImplTest, actionPluginIsRunning)
 
 void CoreServiceImplTest::checkPluginIsRunning(const std::string plugin_name)
 {
-    dronecode_sdk::rpc::core::ListRunningPluginsResponse response;
+    mavsdk::rpc::core::ListRunningPluginsResponse response;
 
     _core_service->ListRunningPlugins(nullptr, nullptr, &response);
 
@@ -89,7 +89,7 @@ TEST_F(CoreServiceImplTest, telemetryPluginIsRunning)
 
 TEST_F(CoreServiceImplTest, addressIsLocalhostInPluginInfos)
 {
-    dronecode_sdk::rpc::core::ListRunningPluginsResponse response;
+    mavsdk::rpc::core::ListRunningPluginsResponse response;
 
     _core_service->ListRunningPlugins(nullptr, nullptr, &response);
 
@@ -100,7 +100,7 @@ TEST_F(CoreServiceImplTest, addressIsLocalhostInPluginInfos)
 
 TEST_F(CoreServiceImplTest, portIsDefaultInPluginInfos)
 {
-    dronecode_sdk::rpc::core::ListRunningPluginsResponse response;
+    mavsdk::rpc::core::ListRunningPluginsResponse response;
 
     _core_service->ListRunningPlugins(nullptr, nullptr, &response);
 
@@ -113,7 +113,7 @@ TEST_F(CoreServiceImplTest, subscribeConnectionStateSubscribesToDiscover)
 {
     EXPECT_CALL(*_dc, register_on_discover(_)).Times(1);
     grpc::ClientContext context;
-    dronecode_sdk::rpc::core::SubscribeConnectionStateRequest request;
+    mavsdk::rpc::core::SubscribeConnectionStateRequest request;
 
     _stub->SubscribeConnectionState(&context, request);
     _core_service->stop();
@@ -123,7 +123,7 @@ TEST_F(CoreServiceImplTest, subscribeConnectionStateSubscribesToTimeout)
 {
     EXPECT_CALL(*_dc, register_on_timeout(_)).Times(1);
     grpc::ClientContext context;
-    dronecode_sdk::rpc::core::SubscribeConnectionStateRequest request;
+    mavsdk::rpc::core::SubscribeConnectionStateRequest request;
 
     _stub->SubscribeConnectionState(&context, request);
     _core_service->stop();
@@ -141,17 +141,17 @@ TEST_F(CoreServiceImplTest, connectionStateStreamEmptyIfCallbackNotCalled)
 }
 
 std::future<void>
-CoreServiceImplTest::subscribeConnectionStateAsync(std::vector<std::pair<uint64_t, bool>> &events)
+CoreServiceImplTest::subscribeConnectionStateAsync(std::vector<std::pair<uint64_t, bool>>& events)
 {
     return std::async(std::launch::async, [&]() {
         grpc::ClientContext context;
-        dronecode_sdk::rpc::core::SubscribeConnectionStateRequest request;
+        mavsdk::rpc::core::SubscribeConnectionStateRequest request;
         auto response_reader = _stub->SubscribeConnectionState(&context, request);
 
-        dronecode_sdk::rpc::core::ConnectionStateResponse response;
+        mavsdk::rpc::core::ConnectionStateResponse response;
         while (response_reader->Read(&response)) {
-            events.push_back(std::make_pair(response.connection_state().uuid(),
-                                            response.connection_state().is_connected()));
+            events.push_back(std::make_pair(
+                response.connection_state().uuid(), response.connection_state().is_connected()));
         }
     });
 }
@@ -162,7 +162,7 @@ TEST_F(CoreServiceImplTest, connectionStatesSendsOneEvents)
     const bool expected_connection_state = true;
     std::promise<void> subscription_promise;
     auto subscription_future = subscription_promise.get_future();
-    dronecode_sdk::testing::event_callback_t event_callback;
+    mavsdk::testing::event_callback_t event_callback;
     EXPECT_CALL(*_dc, register_on_discover(_))
         .WillOnce(SaveCallback(&event_callback, &subscription_promise));
 
@@ -189,11 +189,11 @@ TEST_F(CoreServiceImplTest, connectionStateSendsMultipleEvents)
     std::promise<void> timeout_subscription_promise;
     auto timeout_subscription_future = timeout_subscription_promise.get_future();
 
-    dronecode_sdk::testing::event_callback_t discover_callback;
+    mavsdk::testing::event_callback_t discover_callback;
     EXPECT_CALL(*_dc, register_on_discover(_))
         .WillOnce(SaveCallback(&discover_callback, &discover_subscription_promise));
 
-    dronecode_sdk::testing::event_callback_t timeout_callback;
+    mavsdk::testing::event_callback_t timeout_callback;
     EXPECT_CALL(*_dc, register_on_timeout(_))
         .WillOnce(SaveCallback(&timeout_callback, &timeout_subscription_promise));
 

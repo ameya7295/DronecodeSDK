@@ -22,7 +22,7 @@ constexpr float M_PI_F = float(M_PI);
 #define STRNCPY strncpy
 #endif
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 typedef std::chrono::time_point<std::chrono::steady_clock> dl_time_t;
 
@@ -33,9 +33,9 @@ public:
 
     virtual dl_time_t steady_time();
     double elapsed_s();
-    double elapsed_since_s(const dl_time_t &since);
+    double elapsed_since_s(const dl_time_t& since);
     dl_time_t steady_time_in_future(double duration_s);
-    void shift_steady_time_by(dl_time_t &time, double offset_s);
+    void shift_steady_time_by(dl_time_t& time, double offset_s);
 
     virtual void sleep_for(std::chrono::hours h);
     virtual void sleep_for(std::chrono::minutes m);
@@ -72,4 +72,4 @@ float to_deg_from_rad(float rad);
 bool are_equal(float one, float two);
 bool are_equal(double one, double two);
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

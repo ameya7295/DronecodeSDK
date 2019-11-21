@@ -2,7 +2,7 @@
 
 #include "plugins/telemetry/telemetry.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace testing {
 
 class MockTelemetry {
@@ -16,17 +16,25 @@ public:
     MOCK_CONST_METHOD1(gps_info_async, void(Telemetry::gps_info_callback_t)){};
     MOCK_CONST_METHOD1(battery_async, void(Telemetry::battery_callback_t)){};
     MOCK_CONST_METHOD1(flight_mode_async, void(Telemetry::flight_mode_callback_t)){};
-    MOCK_CONST_METHOD1(attitude_quaternion_async,
-                       void(Telemetry::attitude_quaternion_callback_t)){};
-    MOCK_CONST_METHOD1(attitude_euler_angle_async,
-                       void(Telemetry::attitude_euler_angle_callback_t)){};
-    MOCK_CONST_METHOD1(camera_attitude_quaternion_async,
-                       void(Telemetry::attitude_quaternion_callback_t)){};
-    MOCK_CONST_METHOD1(camera_attitude_euler_angle_async,
-                       void(Telemetry::attitude_euler_angle_callback_t)){};
+    MOCK_CONST_METHOD1(
+        attitude_quaternion_async, void(Telemetry::attitude_quaternion_callback_t)){};
+    MOCK_CONST_METHOD1(
+        attitude_angular_velocity_body_async,
+        void(Telemetry::attitude_angular_velocity_body_callback_t)){};
+    MOCK_CONST_METHOD1(
+        attitude_euler_angle_async, void(Telemetry::attitude_euler_angle_callback_t)){};
+    MOCK_CONST_METHOD1(
+        camera_attitude_quaternion_async, void(Telemetry::attitude_quaternion_callback_t)){};
+    MOCK_CONST_METHOD1(
+        camera_attitude_euler_angle_async, void(Telemetry::attitude_euler_angle_callback_t)){};
     MOCK_CONST_METHOD1(ground_speed_ned_async, void(Telemetry::ground_speed_ned_callback_t)){};
     MOCK_CONST_METHOD1(rc_status_async, void(Telemetry::rc_status_callback_t)){};
+    MOCK_CONST_METHOD1(
+        actuator_control_target_async, void(Telemetry::actuator_control_target_callback_t)){};
+    MOCK_CONST_METHOD1(
+        actuator_output_status_async, void(Telemetry::actuator_output_status_callback_t)){};
+    MOCK_CONST_METHOD1(odometry_async, void(Telemetry::odometry_callback_t)){};
 };
 
 } // namespace testing
-} // namespace dronecode_sdk
+} // namespace mavsdk

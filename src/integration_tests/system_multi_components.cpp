@@ -5,10 +5,10 @@
 
 #include <iostream>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "system.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::this_thread;
 using namespace std::chrono;
 
@@ -25,7 +25,7 @@ using namespace std::chrono;
  */
 TEST(SitlTestMultiple, SystemMultipleComponents)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     // For both Autopilot and Camera
     ASSERT_EQ(dc.add_udp_connection(), ConnectionResult::SUCCESS);
@@ -40,7 +40,7 @@ TEST(SitlTestMultiple, SystemMultipleComponents)
 
     for (auto uuid : uuids) {
         std::cout << "We found a System with UUID: " << uuid << '\n';
-        System &system = dc.system(uuid);
+        System& system = dc.system(uuid);
 
         auto has_autopilot = system.has_autopilot();
         auto is_standalone = system.is_standalone();

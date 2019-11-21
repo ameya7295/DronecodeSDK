@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unistd.h>
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include <thread>
 
 #if DROP_DEBUG != 1
@@ -15,15 +15,15 @@ bool _timeouted_system = false;
 void on_discover(uint64_t uuid);
 void on_timeout(uint64_t uuid);
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[])
 {
     UNUSED(argc);
     UNUSED(argv);
 
-    dronecode_sdk::DronecodeSDK dc;
+    mavsdk::Mavsdk dc;
 
-    dronecode_sdk::ConnectionResult ret = dc.add_udp_connection();
-    if (ret != dronecode_sdk::ConnectionResult::SUCCESS) {
+    mavsdk::ConnectionResult ret = dc.add_udp_connection();
+    if (ret != mavsdk::ConnectionResult::SUCCESS) {
         std::cout << "failed to add connection" << std::endl;
         return -1;
     }

@@ -2,16 +2,16 @@
 #include <gmock/gmock.h>
 
 #include "connection_initiator.h"
-#include "mocks/dronecode_sdk_mock.h"
+#include "mocks/mavsdk_mock.h"
 
 namespace {
 
 using testing::_;
 using testing::NiceMock;
 
-using event_callback_t = dronecode_sdk::testing::event_callback_t;
-using MockDronecodeSDK = NiceMock<dronecode_sdk::testing::MockDronecodeSDK>;
-using ConnectionInitiator = dronecode_sdk::backend::ConnectionInitiator<MockDronecodeSDK>;
+using event_callback_t = mavsdk::testing::event_callback_t;
+using MockMavsdk = NiceMock<mavsdk::testing::MockMavsdk>;
+using ConnectionInitiator = mavsdk::backend::ConnectionInitiator<MockMavsdk>;
 
 static constexpr auto ARBITRARY_CONNECTION_URL = "udp://1291";
 static constexpr auto ARBITRARY_UUID = 1492;
@@ -24,7 +24,7 @@ ACTION_P(SaveCallback, event_callback)
 TEST(ConnectionInitiator, registerDiscoverIsCalledExactlyOnce)
 {
     ConnectionInitiator initiator;
-    MockDronecodeSDK dc;
+    MockMavsdk dc;
     EXPECT_CALL(dc, register_on_discover(_)).Times(1);
 
     initiator.start(dc, ARBITRARY_CONNECTION_URL);
@@ -33,7 +33,7 @@ TEST(ConnectionInitiator, registerDiscoverIsCalledExactlyOnce)
 TEST(ConnectionInitiator, startAddsUDPConnection)
 {
     ConnectionInitiator initiator;
-    MockDronecodeSDK dc;
+    MockMavsdk dc;
 
     EXPECT_CALL(dc, add_any_connection(_));
 
@@ -43,7 +43,7 @@ TEST(ConnectionInitiator, startAddsUDPConnection)
 TEST(ConnectionInitiator, startHangsUntilSystemDiscovered)
 {
     ConnectionInitiator initiator;
-    MockDronecodeSDK dc;
+    MockMavsdk dc;
     event_callback_t discover_callback;
     EXPECT_CALL(dc, register_on_discover(_)).WillOnce(SaveCallback(&discover_callback));
 
@@ -52,8 +52,8 @@ TEST(ConnectionInitiator, startHangsUntilSystemDiscovered)
         initiator.wait();
     });
 
-    EXPECT_TRUE(async_future.wait_for(std::chrono::milliseconds(100)) ==
-                std::future_status::timeout)
+    EXPECT_TRUE(
+        async_future.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
         << "Call to 'start(...)' should hang until 'discover_callback(...)' is actually called!";
     discover_callback(ARBITRARY_UUID);
 }
@@ -61,7 +61,7 @@ TEST(ConnectionInitiator, startHangsUntilSystemDiscovered)
 TEST(ConnectionInitiator, connectionDetectedIfDiscoverCallbackCalledBeforeWait)
 {
     ConnectionInitiator initiator;
-    MockDronecodeSDK dc;
+    MockMavsdk dc;
     event_callback_t discover_callback;
     EXPECT_CALL(dc, register_on_discover(_)).WillOnce(SaveCallback(&discover_callback));
 
@@ -73,7 +73,7 @@ TEST(ConnectionInitiator, connectionDetectedIfDiscoverCallbackCalledBeforeWait)
 TEST(ConnectionInitiator, doesNotCrashIfDiscoverCallbackCalledMoreThanOnce)
 {
     ConnectionInitiator initiator;
-    MockDronecodeSDK dc;
+    MockMavsdk dc;
     event_callback_t discover_callback;
     EXPECT_CALL(dc, register_on_discover(_)).WillOnce(SaveCallback(&discover_callback));
 

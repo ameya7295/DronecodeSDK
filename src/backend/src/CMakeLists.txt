@@ -1,15 +1,22 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(COMPONENTS_LIST core action calibration gimbal camera mission offboard telemetry info param)
-
-include(cmake/compile_proto.cmake)
+set(COMPONENTS_LIST action calibration camera core geofence gimbal info mission mocap offboard param shell telemetry)
 
 foreach(COMPONENT_NAME ${COMPONENTS_LIST})
-    compile_proto_pb(${COMPONENT_NAME} PB_COMPILED_SOURCE)
-    list(APPEND PB_COMPILED_SOURCES ${PB_COMPILED_SOURCE})
+    add_library(${COMPONENT_NAME}_proto_gens STATIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/generated/${COMPONENT_NAME}/${COMPONENT_NAME}.grpc.pb.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/generated/${COMPONENT_NAME}/${COMPONENT_NAME}.pb.cc)
 
-    compile_proto_grpc(${COMPONENT_NAME} GRPC_COMPILED_SOURCE)
-    list(APPEND GRPC_COMPILED_SOURCES ${GRPC_COMPILED_SOURCE})
+    target_link_libraries(${COMPONENT_NAME}_proto_gens
+        gRPC::grpc++
+    )
+
+    target_include_directories(${COMPONENT_NAME}_proto_gens
+      PRIVATE
+      ${PROJECT_SOURCE_DIR}/backend/src/generated
+    )
+
+    list(APPEND COMPONENTS_PROTOGENS ${COMPONENT_NAME}_proto_gens)
 endforeach()
 
 set(BACKEND_SOURCES
@@ -17,8 +24,6 @@ set(BACKEND_SOURCES
     backend_api.cpp
     backend.cpp
     grpc_server.cpp
-    ${GRPC_COMPILED_SOURCES}
-    ${PB_COMPILED_SOURCES}
 )
 
 if(IOS)
@@ -29,35 +34,42 @@ if(IOS)
 endif()
 
 if(IOS)
-    add_library(backend SHARED ${BACKEND_SOURCES})
+    add_library(mavsdk_server SHARED ${BACKEND_SOURCES})
 else()
-    add_library(backend ${BACKEND_SOURCES})
+    add_library(mavsdk_server ${BACKEND_SOURCES})
 endif()
 
-target_link_libraries(backend
-    dronecode_sdk_action
-    dronecode_sdk_calibration
-    dronecode_sdk_gimbal
-    dronecode_sdk_camera
-    dronecode_sdk_mission
-    dronecode_sdk_offboard
-    dronecode_sdk_telemetry
-    dronecode_sdk_info
-    dronecode_sdk_param
-    dronecode_sdk
+target_link_libraries(mavsdk_server
+    PRIVATE
+    mavsdk_action
+    mavsdk_calibration
+    mavsdk_geofence
+    mavsdk_gimbal
+    mavsdk_camera
+    mavsdk_mission
+    mavsdk_offboard
+    mavsdk_telemetry
+    mavsdk_info
+    mavsdk_param
+    mavsdk_shell
+    mavsdk_mocap
+    mavsdk
     gRPC::grpc++
+    ${COMPONENTS_PROTOGENS}
 )
 
-target_include_directories(backend
+target_include_directories(mavsdk_server
     PRIVATE
-    ${PROJECT_SOURCE_DIR}/core
-    ${PROJECT_SOURCE_DIR}/plugins
-    ${PROJECT_SOURCE_DIR}/backend/src/plugins
-    ${CMAKE_BINARY_DIR}/src/backend/src
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/core>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/plugins>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/backend/src/plugins>
+    PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/backend/src/generated>
+    $<INSTALL_INTERFACE:include>
 )
 
 if(IOS)
-    set_target_properties(backend PROPERTIES
+    set_target_properties(mavsdk_server PROPERTIES
         FRAMEWORK TRUE
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_NAME_DIR @rpath
@@ -66,17 +78,39 @@ if(IOS)
         MACOSX_FRAMEWORK_INFO_PLIST ${PROJECT_SOURCE_DIR}/backend/cmake/MacOSXFrameworkInfo.plist.in
     )
 else()
-    add_executable(backend_bin
-        dronecode_sdk_server.cpp
+    add_executable(mavsdk_server_bin
+        mavsdk_server.cpp
     )
 
-    target_link_libraries(backend_bin
-        backend
-        dronecode_sdk
+    target_link_libraries(mavsdk_server_bin
+        mavsdk_server
+        mavsdk
     )
 
-    target_include_directories(backend_bin
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/core
+    # MSVC fails to generate the `mavsdk_server` binary while having
+    # a library called `mavsdk_server` as well. This means that with
+    # MSVC, we build `mavsdk_server_bin.exe`.
+    if(NOT MSVC)
+        set_target_properties(mavsdk_server_bin PROPERTIES
+            OUTPUT_NAME mavsdk_server
+        )
+    endif()
+
+    install(TARGETS mavsdk_server_bin
+        EXPORT mavsdk-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
+
+    if(BUILD_SHARED_LIBS)
+        install(TARGETS mavsdk_server
+            EXPORT mavsdk-targets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+
+        install(FILES
+            backend_api.h
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mavsdk/backend"
+        )
+    endif()
 endif()
+

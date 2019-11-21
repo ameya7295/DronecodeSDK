@@ -6,12 +6,12 @@
 #include <cmath>
 #include "integration_test_helper.h"
 #include "path_checker.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/telemetry/telemetry.h"
 #include "plugins/action/action.h"
 #include "plugins/mission/mission.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
 // TODO: add checks that verify the return altitude
@@ -35,7 +35,7 @@ TEST_F(SitlTest, MissionWithRTLHigherAnyway)
 
 void do_mission_with_rtl(float mission_altitude_m, float return_altitude_m)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     {
         auto prom = std::make_shared<std::promise<void>>();
@@ -57,7 +57,7 @@ void do_mission_with_rtl(float mission_altitude_m, float return_altitude_m)
         dc.register_on_discover(nullptr);
     }
 
-    System &system = dc.system();
+    System& system = dc.system();
     auto telemetry = std::make_shared<Telemetry>(system);
     auto mission = std::make_shared<Mission>(system);
     auto action = std::make_shared<Action>(system);

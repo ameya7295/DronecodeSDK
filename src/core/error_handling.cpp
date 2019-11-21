@@ -1,8 +1,8 @@
 #include "error_handling.h"
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-const char *result_str(Result res)
+const char* result_str(Result res)
 {
     switch (res) {
         case Result::SUCCESS:
@@ -28,4 +28,4 @@ const char *result_str(Result res)
     }
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

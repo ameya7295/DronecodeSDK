@@ -1,13 +1,13 @@
 #include <iostream>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/param/param.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST_F(SitlTest, ParamSad)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -15,7 +15,7 @@ TEST_F(SitlTest, ParamSad)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    auto &system = dc.system();
+    auto& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto param = std::make_shared<Param>(system);
@@ -39,7 +39,7 @@ TEST_F(SitlTest, ParamSad)
 
 TEST_F(SitlTest, ParamHappy)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -47,7 +47,7 @@ TEST_F(SitlTest, ParamHappy)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    auto &system = dc.system();
+    auto& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto param = std::make_shared<Param>(system);

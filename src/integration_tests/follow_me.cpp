@@ -5,33 +5,32 @@
 #include <array>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/telemetry/telemetry.h"
 #include "plugins/action/action.h"
 #include "plugins/follow_me/follow_me.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::chrono;
 using namespace std::this_thread;
 using namespace std::placeholders;
 
-void print(const FollowMe::Config &config);
-void send_location_updates(std::shared_ptr<FollowMe> follow_me,
-                           size_t count = 25ul,
-                           float rate = 1.f);
+void print(const FollowMe::Config& config);
+void send_location_updates(
+    std::shared_ptr<FollowMe> follow_me, size_t count = 25ul, float rate = 1.f);
 
 const size_t N_LOCATIONS = 100ul;
 
 TEST_F(SitlTest, FollowMeOneLocation)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ConnectionResult::SUCCESS, ret);
 
     // Wait for system to connect via heartbeat.
     sleep_for(seconds(2));
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto telemetry = std::make_shared<Telemetry>(system);
@@ -92,15 +91,15 @@ TEST_F(SitlTest, FollowMeOneLocation)
 
 TEST_F(SitlTest, FollowMeMultiLocationWithConfig)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ConnectionResult::SUCCESS, ret);
 
     // Wait for system to connect via heartbeat.
-    ASSERT_TRUE(poll_condition_with_timeout([&dc]() { return dc.is_connected(); },
-                                            std::chrono::seconds(10)));
-    System &system = dc.system();
+    ASSERT_TRUE(poll_condition_with_timeout(
+        [&dc]() { return dc.is_connected(); }, std::chrono::seconds(10)));
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto telemetry = std::make_shared<Telemetry>(system);
@@ -164,7 +163,7 @@ TEST_F(SitlTest, FollowMeMultiLocationWithConfig)
     }
 }
 
-void print(const FollowMe::Config &config)
+void print(const FollowMe::Config& config)
 {
     std::cout << "Current FollowMe configuration of the system" << std::endl;
     std::cout << "---------------------------" << std::endl;

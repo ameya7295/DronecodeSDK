@@ -1,7 +1,7 @@
 #include "calibration_statustext_parser.h"
 #include <gtest/gtest.h>
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST(CalibrationStatustextParser, Validity)
 {
@@ -84,8 +84,9 @@ TEST(CalibrationStatustextParser, Instructions)
     parser.reset();
     EXPECT_TRUE(parser.parse("[cal] right side already completed, rotate to a different side"));
     EXPECT_EQ(parser.get_status(), CalibrationStatustextParser::Status::INSTRUCTION);
-    EXPECT_STREQ(parser.get_instruction().c_str(),
-                 "right side already completed, rotate to a different side");
+    EXPECT_STREQ(
+        parser.get_instruction().c_str(),
+        "right side already completed, rotate to a different side");
 
     parser.reset();
     EXPECT_TRUE(parser.parse("[cal] down side already completed"));

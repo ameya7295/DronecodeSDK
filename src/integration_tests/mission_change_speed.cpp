@@ -4,12 +4,12 @@
 #include <atomic>
 #include <cmath>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/telemetry/telemetry.h"
 #include "plugins/action/action.h"
 #include "plugins/mission/mission.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
 static void receive_upload_mission_result(Mission::Result result);
@@ -20,7 +20,7 @@ std::shared_ptr<MissionItem> only_set_speed(float speed_m_s);
 std::shared_ptr<MissionItem>
 add_waypoint(double latitude_deg, double longitude_deg, float relative_altitude_m, float speed_m_s);
 
-float current_speed(std::shared_ptr<Telemetry> &telemetry);
+float current_speed(std::shared_ptr<Telemetry>& telemetry);
 
 static std::atomic<bool> _mission_sent_ok{false};
 static std::atomic<bool> _mission_started_ok{false};
@@ -32,16 +32,16 @@ const static float speeds[4] = {10.0f, 3.0f, 8.0f, 5.0f};
 
 TEST_F(SitlTest, MissionChangeSpeed)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
 
     // Wait for system to connect via heartbeat.
-    ASSERT_TRUE(poll_condition_with_timeout([&dc]() { return dc.is_connected(); },
-                                            std::chrono::seconds(10)));
+    ASSERT_TRUE(poll_condition_with_timeout(
+        [&dc]() { return dc.is_connected(); }, std::chrono::seconds(10)));
 
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_autopilot());
 
     auto telemetry = std::make_shared<Telemetry>(system);
@@ -161,12 +161,13 @@ add_waypoint(double latitude_deg, double longitude_deg, float relative_altitude_
     return new_item;
 }
 
-float current_speed(std::shared_ptr<Telemetry> &telemetry)
+float current_speed(std::shared_ptr<Telemetry>& telemetry)
 {
-    return std::sqrt(telemetry->ground_speed_ned().velocity_north_m_s *
-                         telemetry->ground_speed_ned().velocity_north_m_s +
-                     telemetry->ground_speed_ned().velocity_east_m_s *
-                         telemetry->ground_speed_ned().velocity_east_m_s);
+    return std::sqrt(
+        telemetry->ground_speed_ned().velocity_north_m_s *
+            telemetry->ground_speed_ned().velocity_north_m_s +
+        telemetry->ground_speed_ned().velocity_east_m_s *
+            telemetry->ground_speed_ned().velocity_east_m_s);
 }
 
 void receive_mission_progress(int current, int total)

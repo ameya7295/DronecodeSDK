@@ -3,11 +3,11 @@
 #include <memory>
 #include <atomic>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/telemetry/telemetry.h"
 #include "plugins/geofence/geofence.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
 static void receive_send_geofence_result(Geofence::Result result);
@@ -17,7 +17,7 @@ static std::atomic<bool> _got_result{false};
 
 TEST_F(SitlTest, GeofenceInclusion)
 {
-    DronecodeSDK dl;
+    Mavsdk dl;
 
     ConnectionResult ret = dl.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -25,7 +25,7 @@ TEST_F(SitlTest, GeofenceInclusion)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dl.system();
+    System& system = dl.system();
     ASSERT_TRUE(system.has_autopilot());
     auto telemetry = std::make_shared<Telemetry>(system);
     auto geofence = std::make_shared<Geofence>(system);

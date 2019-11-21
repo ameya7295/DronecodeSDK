@@ -1,16 +1,16 @@
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/action/action.h"
 #include "plugins/telemetry/telemetry.h"
 
 #include <future>
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST_F(SitlTest, ActionHoverAsync)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -26,7 +26,7 @@ TEST_F(SitlTest, ActionHoverAsync)
         ASSERT_EQ(fut.wait_for(std::chrono::seconds(10)), std::future_status::ready);
     }
 
-    System &system = dc.system();
+    System& system = dc.system();
     auto telemetry = std::make_shared<Telemetry>(system);
     auto action = std::make_shared<Action>(system);
 

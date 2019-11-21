@@ -4,7 +4,7 @@
 #include <mutex>
 #include <memory>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
 template<class T> class LockedQueue {
 public:
@@ -32,19 +32,19 @@ public:
 
     class Guard {
     public:
-        Guard(LockedQueue &locked_queue) : _locked_queue(locked_queue)
+        Guard(LockedQueue& locked_queue) : _locked_queue(locked_queue)
         {
             _locked_queue._mutex.lock();
         }
 
         ~Guard() { _locked_queue._mutex.unlock(); }
 
-        Guard(Guard &other) = delete;
-        Guard(const Guard &other) = delete;
-        Guard(Guard &&other) = delete;
-        Guard(const Guard &&other) = delete;
-        Guard &operator=(const Guard &other) = delete;
-        Guard &operator=(Guard &&other) = delete;
+        Guard(Guard& other) = delete;
+        Guard(const Guard& other) = delete;
+        Guard(Guard&& other) = delete;
+        Guard(const Guard&& other) = delete;
+        Guard& operator=(const Guard& other) = delete;
+        Guard& operator=(Guard&& other) = delete;
 
         std::shared_ptr<T> get_front()
         {
@@ -57,7 +57,7 @@ public:
         void pop_front() { _locked_queue._queue.pop_front(); }
 
     private:
-        LockedQueue<T> &_locked_queue;
+        LockedQueue<T>& _locked_queue;
     };
 
 private:
@@ -65,4 +65,4 @@ private:
     std::mutex _mutex{};
 };
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

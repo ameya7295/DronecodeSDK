@@ -3,18 +3,18 @@
 #include <memory>
 #include <string>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 namespace backend {
 
-class DronecodeSDKBackend {
+class MavsdkBackend {
 public:
-    DronecodeSDKBackend();
-    ~DronecodeSDKBackend();
-    DronecodeSDKBackend(DronecodeSDKBackend &&) = delete;
-    DronecodeSDKBackend &operator=(DronecodeSDKBackend &&) = delete;
+    MavsdkBackend();
+    ~MavsdkBackend();
+    MavsdkBackend(MavsdkBackend&&) = delete;
+    MavsdkBackend& operator=(MavsdkBackend&&) = delete;
 
     void startGRPCServer();
-    void connect(const std::string &connection_url = "udp://");
+    void connect(const std::string& connection_url = "udp://");
     void wait();
 
 private:
@@ -23,4 +23,4 @@ private:
 };
 
 } // namespace backend
-} // namespace dronecode_sdk
+} // namespace mavsdk

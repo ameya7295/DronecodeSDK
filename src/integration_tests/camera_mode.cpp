@@ -2,15 +2,15 @@
 #include <future>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "system.h"
 #include "camera_test_helpers.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST(CameraTest, SetModeSync)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -18,7 +18,7 @@ TEST(CameraTest, SetModeSync)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    auto &system = dc.system();
+    auto& system = dc.system();
     ASSERT_TRUE(system.has_camera());
     auto camera = std::make_shared<Camera>(system);
 
@@ -49,7 +49,7 @@ TEST(CameraTest, SetModeSync)
 
 TEST(CameraTest, SetModeAsync)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -57,7 +57,7 @@ TEST(CameraTest, SetModeAsync)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_camera());
     auto camera = std::make_shared<Camera>(system);
 

@@ -3,9 +3,9 @@
 #include <cstring>
 #include <future>
 
-namespace dronecode_sdk {
+namespace mavsdk {
 
-MAVLinkParameters::MAVLinkParameters(SystemImpl &parent) : _parent(parent)
+MAVLinkParameters::MAVLinkParameters(SystemImpl& parent) : _parent(parent)
 {
     _parent.register_mavlink_message_handler(
         MAVLINK_MSG_ID_PARAM_VALUE,
@@ -28,11 +28,12 @@ MAVLinkParameters::~MAVLinkParameters()
     _parent.unregister_all_mavlink_message_handlers(this);
 }
 
-void MAVLinkParameters::set_param_async(const std::string &name,
-                                        const ParamValue &value,
-                                        set_param_callback_t callback,
-                                        const void *cookie,
-                                        bool extended)
+void MAVLinkParameters::set_param_async(
+    const std::string& name,
+    const ParamValue& value,
+    set_param_callback_t callback,
+    const void* cookie,
+    bool extended)
 {
     // if (value.is_float()) {
     //     LogDebug() << "setting param " << name << " to " << value.get_float();
@@ -60,7 +61,7 @@ void MAVLinkParameters::set_param_async(const std::string &name,
 }
 
 MAVLinkParameters::Result
-MAVLinkParameters::set_param(const std::string &name, const ParamValue &value, bool extended)
+MAVLinkParameters::set_param(const std::string& name, const ParamValue& value, bool extended)
 {
     auto prom = std::promise<Result>();
     auto res = prom.get_future();
@@ -71,11 +72,12 @@ MAVLinkParameters::set_param(const std::string &name, const ParamValue &value, b
     return res.get();
 }
 
-void MAVLinkParameters::get_param_async(const std::string &name,
-                                        ParamValue value_type,
-                                        get_param_callback_t callback,
-                                        const void *cookie,
-                                        bool extended)
+void MAVLinkParameters::get_param_async(
+    const std::string& name,
+    ParamValue value_type,
+    get_param_callback_t callback,
+    const void* cookie,
+    bool extended)
 {
     // LogDebug() << "getting param " << name << ", extended: " << (extended ? "yes" : "no");
 
@@ -84,14 +86,6 @@ void MAVLinkParameters::get_param_async(const std::string &name,
         if (callback) {
             ParamValue empty_param;
             callback(MAVLinkParameters::Result::PARAM_NAME_TOO_LONG, empty_param);
-        }
-        return;
-    }
-
-    // Use cached value if available.
-    if (_cache.find(name) != _cache.end()) {
-        if (callback) {
-            callback(MAVLinkParameters::Result::SUCCESS, _cache[name]);
         }
         return;
     }
@@ -109,23 +103,24 @@ void MAVLinkParameters::get_param_async(const std::string &name,
 }
 
 std::pair<MAVLinkParameters::Result, MAVLinkParameters::ParamValue>
-MAVLinkParameters::get_param(const std::string &name, ParamValue value_type, bool extended)
+MAVLinkParameters::get_param(const std::string& name, ParamValue value_type, bool extended)
 {
     auto prom = std::promise<std::pair<Result, MAVLinkParameters::ParamValue>>();
     auto res = prom.get_future();
 
-    get_param_async(name,
-                    value_type,
-                    [&prom](Result result, ParamValue value) {
-                        prom.set_value(std::make_pair<>(result, value));
-                    },
-                    this,
-                    extended);
+    get_param_async(
+        name,
+        value_type,
+        [&prom](Result result, ParamValue value) {
+            prom.set_value(std::make_pair<>(result, value));
+        },
+        this,
+        extended);
 
     return res.get();
 }
 
-void MAVLinkParameters::cancel_all_param(const void *cookie)
+void MAVLinkParameters::cancel_all_param(const void* cookie)
 {
     LockedQueue<WorkItem>::Guard work_queue_guard(_work_queue);
 
@@ -163,24 +158,26 @@ void MAVLinkParameters::do_work()
                 work->param_value.get_128_bytes(param_value_buf);
 
                 // FIXME: extended currently always go to the camera component
-                mavlink_msg_param_ext_set_pack(_parent.get_own_system_id(),
-                                               _parent.get_own_component_id(),
-                                               &message,
-                                               _parent.get_system_id(),
-                                               MAV_COMP_ID_CAMERA,
-                                               param_id,
-                                               param_value_buf,
-                                               work->param_value.get_mav_param_ext_type());
+                mavlink_msg_param_ext_set_pack(
+                    _parent.get_own_system_id(),
+                    _parent.get_own_component_id(),
+                    &message,
+                    _parent.get_system_id(),
+                    MAV_COMP_ID_CAMERA,
+                    param_id,
+                    param_value_buf,
+                    work->param_value.get_mav_param_ext_type());
             } else {
                 // Param set is intended for Autopilot only.
-                mavlink_msg_param_set_pack(_parent.get_own_system_id(),
-                                           _parent.get_own_component_id(),
-                                           &message,
-                                           _parent.get_system_id(),
-                                           _parent.get_autopilot_id(),
-                                           param_id,
-                                           work->param_value.get_4_float_bytes(),
-                                           work->param_value.get_mav_param_type());
+                mavlink_msg_param_set_pack(
+                    _parent.get_own_system_id(),
+                    _parent.get_own_component_id(),
+                    &message,
+                    _parent.get_system_id(),
+                    _parent.get_autopilot_id(),
+                    param_id,
+                    work->param_value.get_4_float_bytes(),
+                    work->param_value.get_mav_param_type());
             }
 
             if (!_parent.send_message(message)) {
@@ -204,13 +201,14 @@ void MAVLinkParameters::do_work()
         case WorkItem::Type::Get: {
             // LogDebug() << "now getting: " << work->param_name;
             if (work->extended) {
-                mavlink_msg_param_ext_request_read_pack(_parent.get_own_system_id(),
-                                                        _parent.get_own_component_id(),
-                                                        &message,
-                                                        _parent.get_system_id(),
-                                                        MAV_COMP_ID_CAMERA,
-                                                        param_id,
-                                                        -1);
+                mavlink_msg_param_ext_request_read_pack(
+                    _parent.get_own_system_id(),
+                    _parent.get_own_component_id(),
+                    &message,
+                    _parent.get_system_id(),
+                    MAV_COMP_ID_CAMERA,
+                    param_id,
+                    -1);
 
             } else {
                 // LogDebug() << "request read: "
@@ -220,21 +218,22 @@ void MAVLinkParameters::do_work()
                 //    << (int)_parent.get_system_id() << ":"
                 //    << (int)_parent.get_autopilot_id();
 
-                mavlink_msg_param_request_read_pack(_parent.get_own_system_id(),
-                                                    _parent.get_own_component_id(),
-                                                    &message,
-                                                    _parent.get_system_id(),
-                                                    _parent.get_autopilot_id(),
-                                                    param_id,
-                                                    -1);
+                mavlink_msg_param_request_read_pack(
+                    _parent.get_own_system_id(),
+                    _parent.get_own_component_id(),
+                    &message,
+                    _parent.get_system_id(),
+                    _parent.get_autopilot_id(),
+                    param_id,
+                    -1);
             }
 
             if (!_parent.send_message(message)) {
                 LogErr() << "Error: Send message failed";
                 if (work->get_param_callback) {
                     ParamValue empty_param;
-                    work->get_param_callback(MAVLinkParameters::Result::CONNECTION_ERROR,
-                                             empty_param);
+                    work->get_param_callback(
+                        MAVLinkParameters::Result::CONNECTION_ERROR, empty_param);
                 }
                 work_queue_guard.pop_front();
                 return;
@@ -252,21 +251,7 @@ void MAVLinkParameters::do_work()
     }
 }
 
-void MAVLinkParameters::remove_from_cache(const std::string &name)
-{
-    const auto &it = _cache.find(name);
-    if (it == _cache.end()) {
-        return;
-    }
-    _cache.erase(it);
-}
-
-void MAVLinkParameters::reset_cache()
-{
-    _cache.clear();
-}
-
-void MAVLinkParameters::process_param_value(const mavlink_message_t &message)
+void MAVLinkParameters::process_param_value(const mavlink_message_t& message)
 {
     mavlink_param_value_t param_value;
     mavlink_msg_param_value_decode(&message, &param_value);
@@ -294,7 +279,6 @@ void MAVLinkParameters::process_param_value(const mavlink_message_t &message)
             ParamValue value;
             value.set_from_mavlink_param_value(param_value);
             if (value.is_same_type(work->param_value)) {
-                _cache[work->param_name] = value;
                 if (work->get_param_callback) {
                     work->get_param_callback(MAVLinkParameters::Result::SUCCESS, value);
                 }
@@ -312,7 +296,6 @@ void MAVLinkParameters::process_param_value(const mavlink_message_t &message)
         } break;
         case WorkItem::Type::Set: {
             // We are done, inform caller and go back to idle
-            _cache[work->param_name] = work->param_value;
             if (work->set_param_callback) {
                 work->set_param_callback(MAVLinkParameters::Result::SUCCESS);
             }
@@ -325,7 +308,7 @@ void MAVLinkParameters::process_param_value(const mavlink_message_t &message)
     }
 }
 
-void MAVLinkParameters::process_param_ext_value(const mavlink_message_t &message)
+void MAVLinkParameters::process_param_ext_value(const mavlink_message_t& message)
 {
     // LogDebug() << "getting param ext value";
 
@@ -352,9 +335,24 @@ void MAVLinkParameters::process_param_ext_value(const mavlink_message_t &message
             ParamValue value;
             value.set_from_mavlink_param_ext_value(param_ext_value);
             if (value.is_same_type(work->param_value)) {
-                _cache[work->param_name] = value;
                 if (work->get_param_callback) {
                     work->get_param_callback(MAVLinkParameters::Result::SUCCESS, value);
+                }
+            } else if (value.is_uint8() && work->param_value.is_uint16()) {
+                // FIXME: workaround for mismatching type uint8_t which should be uint16_t.
+                ParamValue correct_type_value;
+                correct_type_value.set_uint16(static_cast<uint16_t>(value.get_uint8()));
+                if (work->get_param_callback) {
+                    work->get_param_callback(
+                        MAVLinkParameters::Result::SUCCESS, correct_type_value);
+                }
+            } else if (value.is_uint8() && work->param_value.is_uint32()) {
+                // FIXME: workaround for mismatching type uint8_t which should be uint32_t.
+                ParamValue correct_type_value;
+                correct_type_value.set_uint32(static_cast<uint32_t>(value.get_uint8()));
+                if (work->get_param_callback) {
+                    work->get_param_callback(
+                        MAVLinkParameters::Result::SUCCESS, correct_type_value);
                 }
             } else {
                 LogErr() << "Param types don't match";
@@ -375,7 +373,7 @@ void MAVLinkParameters::process_param_ext_value(const mavlink_message_t &message
     }
 }
 
-void MAVLinkParameters::process_param_ext_ack(const mavlink_message_t &message)
+void MAVLinkParameters::process_param_ext_ack(const mavlink_message_t& message)
 {
     // LogDebug() << "getting param ext ack";
 
@@ -406,7 +404,6 @@ void MAVLinkParameters::process_param_ext_ack(const mavlink_message_t &message)
         case WorkItem::Type::Set: {
             if (param_ext_ack.param_result == PARAM_ACK_ACCEPTED) {
                 // We are done, inform caller and go back to idle
-                _cache[work->param_name] = work->param_value;
                 if (work->set_param_callback) {
                     work->set_param_callback(MAVLinkParameters::Result::SUCCESS);
                 }
@@ -487,10 +484,10 @@ std::string MAVLinkParameters::extract_safe_param_id(const char param_id[])
     return std::string(param_id_long_enough);
 }
 
-std::ostream &operator<<(std::ostream &strm, const MAVLinkParameters::ParamValue &obj)
+std::ostream& operator<<(std::ostream& strm, const MAVLinkParameters::ParamValue& obj)
 {
     strm << obj.get_string();
     return strm;
 }
 
-} // namespace dronecode_sdk
+} // namespace mavsdk

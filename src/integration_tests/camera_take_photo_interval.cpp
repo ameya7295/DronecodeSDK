@@ -5,11 +5,11 @@
 #include <future>
 #include "integration_test_helper.h"
 #include "global_include.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "system.h"
 #include "camera_test_helpers.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 
 static void receive_camera_result(Camera::Result result);
@@ -20,7 +20,7 @@ static std::atomic<bool> _received_result{false};
 
 TEST(CameraTest, TakePhotoInterval)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -28,7 +28,7 @@ TEST(CameraTest, TakePhotoInterval)
     // Wait for system to connect via heartbeat.
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    System &system = dc.system();
+    System& system = dc.system();
     ASSERT_TRUE(system.has_camera());
     auto camera = std::make_shared<Camera>(system);
 

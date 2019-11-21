@@ -10,11 +10,11 @@
  * @date 2019-05-09
  */
 
-#include <dronecode_sdk/dronecode_sdk.h>
-#include <dronecode_sdk/plugins/action/action.h>
-#include <dronecode_sdk/plugins/mission/mission.h>
-#include <dronecode_sdk/plugins/telemetry/telemetry.h>
-#include <dronecode_sdk/plugins/geofence/geofence.h>
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/action/action.h>
+#include <mavsdk/plugins/mission/mission.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+#include <mavsdk/plugins/geofence/geofence.h>
 
 #include <functional>
 #include <future>
@@ -25,7 +25,7 @@
 #define TELEMETRY_CONSOLE_TEXT "\033[34m" // Turn text on console blue
 #define NORMAL_CONSOLE_TEXT "\033[0m" // Restore normal console colour
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 using namespace std::placeholders; // for `_1`
 using namespace std::chrono; // for seconds(), milliseconds()
 using namespace std::this_thread; // for sleep_for()
@@ -42,9 +42,9 @@ void usage(std::string bin_name)
               << "For example, to connect to the simulator use URL: udp://:14540" << std::endl;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     {
         auto prom = std::make_shared<std::promise<void>>();
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     // We don't need to specifiy the UUID if it's only one system anyway.
     // If there were multiple, we could specify it with:
     // dc.system(uint64_t uuid);
-    System &system = dc.system();
+    System& system = dc.system();
     auto action = std::make_shared<Action>(system);
     auto mission = std::make_shared<Mission>(system);
     auto telemetry = std::make_shared<Telemetry>(system);
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
 
         auto prom = std::make_shared<std::promise<Geofence::Result>>();
         auto future_result = prom->get_future();
-        geofence->send_geofence_async(polygons,
-                                      [prom](Geofence::Result result) { prom->set_value(result); });
+        geofence->send_geofence_async(
+            polygons, [prom](Geofence::Result result) { prom->set_value(result); });
 
         const Geofence::Result result = future_result.get();
         if (result != Geofence::Result::SUCCESS) {

@@ -1,13 +1,13 @@
 #include <iostream>
 #include "integration_test_helper.h"
-#include "dronecode_sdk.h"
+#include "mavsdk.h"
 #include "plugins/info/info.h"
 
-using namespace dronecode_sdk;
+using namespace mavsdk;
 
 TEST_F(SitlTest, Info)
 {
-    DronecodeSDK dc;
+    Mavsdk dc;
 
     ConnectionResult ret = dc.add_udp_connection();
     ASSERT_EQ(ret, ConnectionResult::SUCCESS);
@@ -16,7 +16,7 @@ TEST_F(SitlTest, Info)
     std::this_thread::sleep_for(std::chrono::seconds(2));
     ASSERT_TRUE(dc.is_connected());
 
-    System &system = dc.system();
+    System& system = dc.system();
     auto info = std::make_shared<Info>(system);
 
     // FIXME: we need to wait some time until Info has determined the version.
